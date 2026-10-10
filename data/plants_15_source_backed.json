@@ -1,0 +1,571 @@
+[
+  {
+    "id": "aloe_vera",
+    "name": "Aloe Vera",
+    "scientific_name": "Aloe vera",
+    "aliases": [
+      "Aloe",
+      "True Aloe",
+      "Barbados Aloe",
+      "Medicine Plant"
+    ],
+    "light": "Bright light with several hours of sun; acclimate gradually before placing it in stronger direct sun.",
+    "soil_mix_parts": {
+      "potting_mix": 1,
+      "perlite": 1,
+      "pumice_or_coarse_grit": 1
+    },
+    "pot_note": "Use a pot with multiple drainage holes; an unglazed clay pot can help the mix dry. Do not let the pot stand in drained water.",
+    "watering": {
+      "rule": "Let the potting mix dry out completely, then water thoroughly and let excess water drain away. Reduce watering during cool, low-growth periods.",
+      "by_season": {
+        "summer": "Check the mix periodically because heat can speed drying, but water only after it has dried completely.",
+        "monsoon": "Shelter the pot from prolonged rain; check that the mix is completely dry before watering.",
+        "autumn": "Allow the mix to dry completely between waterings and reassess after each watering.",
+        "winter": "Water sparingly and only when the mix is fully dry; cool conditions usually mean slower drying."
+      },
+      "avoid": "Do not keep the mix continuously wet or leave water in the saucer; persistent moisture can cause root problems."
+    },
+    "common_mistakes": [
+      "Watering before the mix has dried completely",
+      "Using a pot without drainage holes",
+      "Moving the plant suddenly into intense direct sun"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/aloe-vera/common-name/aloe-vera/",
+      "https://yardandgarden.extension.iastate.edu/how-to/growing-succulents-indoors"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "money_plant",
+    "name": "Money Plant (Pothos)",
+    "scientific_name": "Epipremnum aureum",
+    "aliases": [
+      "Pothos",
+      "Golden Pothos",
+      "Devil's Ivy",
+      "Money Plant",
+      "Epipremnum"
+    ],
+    "light": "Medium to bright filtered or indirect light is suitable. Protect it from strong direct sun, which can scorch leaves.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "perlite": 1
+    },
+    "pot_note": "Choose a pot with drainage holes and an airy growing medium. A support pole or hanging pot can accommodate its climbing or trailing growth.",
+    "watering": {
+      "rule": "Let the soil surface dry slightly before watering. Water thoroughly, then empty the saucer so roots do not sit in water.",
+      "by_season": {
+        "summer": "Check the top layer more often in hot or bright conditions; water when the surface has dried slightly.",
+        "monsoon": "Check the soil before watering because humid weather and rain can slow drying; never leave the pot standing in water.",
+        "autumn": "Water when the surface has dried slightly, adjusting to light and room conditions.",
+        "winter": "Check before watering and allow more time for the soil to dry if growth and evaporation slow."
+      },
+      "avoid": "Avoid waterlogged soil, prolonged harsh direct sun, and cold drafts."
+    },
+    "common_mistakes": [
+      "Watering while the soil is still wet",
+      "Placing it in strong direct afternoon sun",
+      "Leaving it in cold drafts"
+    ],
+    "sources": [
+      "https://hort.extension.wisc.edu/articles/pothos-epipremmum-aureum/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "tulsi",
+    "name": "Tulsi (Holy Basil)",
+    "scientific_name": "Ocimum tenuiflorum",
+    "aliases": [
+      "Holy Basil",
+      "Tulasi",
+      "Ocimum sanctum",
+      "Indian Holy Basil"
+    ],
+    "light": "Prefer a sunny outdoor position with around six or more hours of direct sun when practical.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "compost": 1,
+      "perlite": 1
+    },
+    "pot_note": "Use a container with drainage holes and a well-drained, moisture-retentive mix. A sunny balcony or outdoor position is generally better than a dim indoor corner.",
+    "watering": {
+      "rule": "Keep the soil lightly and evenly moist while allowing excess water to drain. For established plants, decide from rainfall and soil moisture rather than following a rigid schedule.",
+      "by_season": {
+        "summer": "Check the soil frequently in heat; water when the upper layer begins to dry, without allowing the pot to remain waterlogged.",
+        "monsoon": "Check soil moisture and recent rainfall before watering; ensure the pot drains freely.",
+        "autumn": "Water according to soil moisture and plant growth; do not follow a fixed weekly schedule if the soil is still moist.",
+        "winter": "Check before watering and avoid soggy soil, especially when growth slows or nights are cool."
+      },
+      "avoid": "Avoid waterlogged soil and watering automatically when rain or still-moist soil has already supplied enough moisture."
+    },
+    "common_mistakes": [
+      "Growing it in insufficient light",
+      "Allowing the pot to remain waterlogged",
+      "Watering on a fixed schedule without checking rainfall or soil moisture"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/ocimum-tenuiflorum/common-name/tulsi/",
+      "https://www.agritech.tnau.ac.in/horticulture/horti_medicinal%20crops_tulsi.html"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "snake_plant",
+    "name": "Snake Plant",
+    "scientific_name": "Dracaena trifasciata",
+    "aliases": [
+      "Mother-in-Law's Tongue",
+      "Sansevieria trifasciata",
+      "Good Luck Plant",
+      "Golden Birds Nest"
+    ],
+    "light": "Tolerates low light, but a bright position with indirect light or part-day sun is also suitable. Avoid suddenly exposing indoor leaves to intense sun.",
+    "soil_mix_parts": {
+      "potting_mix": 1,
+      "perlite": 1,
+      "pumice_or_coarse_grit": 1
+    },
+    "pot_note": "Use a sturdy pot with drainage holes and a fast-draining mix. A heavy pot can help support tall leaves.",
+    "watering": {
+      "rule": "Allow the mix to dry between waterings. Water thoroughly only when it is dry, then drain away excess water.",
+      "by_season": {
+        "summer": "Check the mix before watering; even in warm weather, water only once it has dried out.",
+        "monsoon": "Keep the pot sheltered from prolonged rain and wait until the mix is dry before watering.",
+        "autumn": "Allow the mix to dry fully between waterings as growth and evaporation change.",
+        "winter": "Water much less often; ensure the mix is dry before watering again."
+      },
+      "avoid": "Avoid frequent watering and persistently wet soil; overwatering can cause root rot."
+    },
+    "common_mistakes": [
+      "Watering too often",
+      "Using a pot without drainage",
+      "Leaving the root zone persistently wet"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/dracaena-trifasciata/common-name/snake-plant/",
+      "https://yardandgarden.extension.iastate.edu/how-to/growing-succulents-indoors"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "spider_plant",
+    "name": "Spider Plant",
+    "scientific_name": "Chlorophytum comosum",
+    "aliases": [
+      "Spiderplant",
+      "Spider Ivy",
+      "Ribbon Plant",
+      "Chlorophytum"
+    ],
+    "light": "Medium, indirect light is ideal; it tolerates shade but avoid strong direct sunlight on the leaves.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "perlite": 1
+    },
+    "pot_note": "Works well in a pot or hanging basket with drainage holes. Allow room for arching leaves and trailing plantlets.",
+    "watering": {
+      "rule": "Aim for lightly moist soil while allowing the surface to dry somewhat between waterings. Reduce watering during winter.",
+      "by_season": {
+        "summer": "Check the surface regularly and water when it begins to dry, especially in a warm bright position.",
+        "monsoon": "Check the soil first and empty the saucer; humid conditions may mean less frequent watering.",
+        "autumn": "Water when the surface begins to dry and the pot feels lighter, rather than by calendar alone.",
+        "winter": "Allow longer between waterings as growth and drying slow; avoid keeping the mix saturated."
+      },
+      "avoid": "Avoid waterlogging, direct harsh sun, and over-fertilizing. If leaf tips repeatedly brown, consider whether water quality or salt buildup may be contributing."
+    },
+    "common_mistakes": [
+      "Keeping the soil constantly saturated",
+      "Exposing leaves to harsh direct sun",
+      "Over-fertilizing"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/chlorophytum-comosum/common-name/spider-plant/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "zz_plant",
+    "name": "ZZ Plant",
+    "scientific_name": "Zamioculcas zamiifolia",
+    "aliases": [
+      "Zanzibar Gem",
+      "Zuzu Plant",
+      "Eternity Plant",
+      "Aroid Palm",
+      "Emerald Palm"
+    ],
+    "light": "Tolerates low light but generally grows best in bright indirect light. Protect it from direct sun that can scorch leaves.",
+    "soil_mix_parts": {
+      "potting_mix": 1,
+      "perlite": 1,
+      "pumice_or_coarse_grit": 1
+    },
+    "pot_note": "Use a pot with drainage holes and a well-drained mix. The thick underground rhizomes store water, so avoid an oversized pot that stays wet for too long.",
+    "watering": {
+      "rule": "Allow the potting mix to dry out between waterings. Water thoroughly only when dry and drain excess water.",
+      "by_season": {
+        "summer": "Check that the mix is completely dry before watering; do not water just because the weather is hot.",
+        "monsoon": "Shelter the pot from prolonged rain and wait for the mix to dry before watering.",
+        "autumn": "Water only after the mix dries out; reassess as the plant's growth slows.",
+        "winter": "Water sparingly and only after the mix has dried completely."
+      },
+      "avoid": "Avoid wet feet and frequent watering; waterlogged mix can damage roots and rhizomes."
+    },
+    "common_mistakes": [
+      "Watering while the mix is still wet",
+      "Placing it in direct sun",
+      "Using a container without drainage"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/zamioculcas-zamiifolia/",
+      "https://yardandgarden.extension.iastate.edu/how-to/growing-succulents-indoors"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "jade_plant",
+    "name": "Jade Plant",
+    "scientific_name": "Crassula ovata",
+    "aliases": [
+      "Jade Tree",
+      "Lucky Plant",
+      "Chinese Rubber Plant",
+      "Baby Jade"
+    ],
+    "light": "Provide bright light and some sun; indoors, use the brightest suitable window and acclimate gradually to stronger sun.",
+    "soil_mix_parts": {
+      "potting_mix": 1,
+      "perlite": 1,
+      "pumice_or_coarse_grit": 1
+    },
+    "pot_note": "Use a pot with drainage holes and a succulent-appropriate, fast-draining mix. Avoid a pot that stays wet for long periods.",
+    "watering": {
+      "rule": "Water moderately only after the soil has dried. Reduce watering from autumn through late winter when growth is slower.",
+      "by_season": {
+        "summer": "Check the soil and water only after it dries; bright light may increase water use, but do not keep the mix wet.",
+        "monsoon": "Keep the pot sheltered from repeated rain and wait until the mix is dry before watering.",
+        "autumn": "Begin reducing watering as growth slows; check dryness before each watering.",
+        "winter": "Water sparingly, only after the soil has dried well."
+      },
+      "avoid": "Avoid overwatering and poorly drained soil; excess moisture can lead to leaf drop and root rot."
+    },
+    "common_mistakes": [
+      "Overwatering",
+      "Keeping the plant in insufficient light for long periods",
+      "Using heavy soil that remains wet"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/crassula-ovata/",
+      "https://hort.extension.wisc.edu/dependable-durable-houseplants/",
+      "https://yardandgarden.extension.iastate.edu/how-to/growing-succulents-indoors"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "areca_palm",
+    "name": "Areca Palm",
+    "scientific_name": "Chrysalidocarpus lutescens",
+    "aliases": [
+      "Dypsis lutescens",
+      "Yellow Palm",
+      "Butterfly Palm",
+      "Golden Cane Palm",
+      "Bamboo Palm"
+    ],
+    "light": "Bright indirect light in an indoor setting. Avoid very dark positions and harsh afternoon sun through glass.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "perlite": 1
+    },
+    "pot_note": "Use a well-drained potting mix in a container with drainage holes. It appreciates warmth and higher humidity; repot when roots require it rather than excessively often.",
+    "watering": {
+      "rule": "During active growth, keep the mix moist but not soggy. Water thoroughly and let excess water drain away.",
+      "by_season": {
+        "summer": "Check moisture frequently in hot, bright conditions and water when the mix begins to dry, without waterlogging it.",
+        "monsoon": "Check before watering; humidity and rain can slow drying. Keep the pot draining freely.",
+        "autumn": "Adjust watering to growth and soil moisture; do not let the mix remain saturated.",
+        "winter": "Water less often if growth and drying slow, but do not let the root ball remain bone-dry for long periods."
+      },
+      "avoid": "Avoid waterlogged soil, dry air for extended periods, and cold drafts."
+    },
+    "common_mistakes": [
+      "Letting the pot sit in standing water",
+      "Placing it in a very dark area",
+      "Allowing prolonged cold or very dry indoor conditions"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/chrysalidocarpus-lutescens/common-name/yellow-palm/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "peace_lily",
+    "name": "Peace Lily",
+    "scientific_name": "Spathiphyllum",
+    "aliases": [
+      "White Sails",
+      "Spathe Flower",
+      "Spathiphyllum wallisii"
+    ],
+    "light": "Partial to deep shade or bright indirect light; keep it out of direct sun.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "perlite": 1
+    },
+    "pot_note": "Use an organic-rich potting mix and a pot with drainage holes. It can tolerate being somewhat pot-bound; repot when it outgrows its container.",
+    "watering": {
+      "rule": "Keep the soil moist but not soggy and allow some drying between waterings. Empty the saucer after watering.",
+      "by_season": {
+        "summer": "Check moisture more often in warm conditions; water as the mix begins to dry, keeping it evenly moist rather than soaked.",
+        "monsoon": "Check the soil before watering and ensure excess water drains; humid conditions can slow drying.",
+        "autumn": "Water according to soil moisture and light, not a fixed weekly schedule.",
+        "winter": "Allow more time between waterings if growth slows, while preventing the root ball from staying dry for too long."
+      },
+      "avoid": "Avoid direct sun, waterlogged soil, over-fertilizing, and salt buildup in the potting mix."
+    },
+    "common_mistakes": [
+      "Placing it in direct sunlight",
+      "Keeping the soil soggy",
+      "Over-fertilizing or allowing salts to build up"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/spathiphyllum/common-name/peace-lily/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "rose",
+    "name": "Rose",
+    "scientific_name": "Rosa",
+    "aliases": [
+      "Roses",
+      "Garden Rose",
+      "Gulab",
+      "Rosa spp."
+    ],
+    "light": "Choose a sunny position with around six or more hours of direct sunlight where the local climate permits.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "compost": 1,
+      "perlite_or_coarse_sand": 1
+    },
+    "pot_note": "Use a large, stable container with drainage holes and an organic-rich but well-drained mix. Leave room for root growth and airflow around foliage.",
+    "watering": {
+      "rule": "Keep the root zone evenly moist but not waterlogged. Water at the soil surface near the base rather than routinely wetting the foliage.",
+      "by_season": {
+        "summer": "Check soil moisture frequently in hot weather; water deeply when needed and allow excess to drain.",
+        "monsoon": "Avoid additional watering when rain has already moistened the root zone; ensure free drainage and avoid routinely wetting leaves.",
+        "autumn": "Water when the root-zone soil begins to dry, adjusting for temperature and growth.",
+        "winter": "Water less often when growth and evaporation slow, but do not let container roots dry out for extended periods."
+      },
+      "avoid": "Avoid waterlogging and repeated overhead irrigation that keeps foliage wet; ensure the pot drains freely."
+    },
+    "common_mistakes": [
+      "Insufficient direct light",
+      "Poor drainage",
+      "Repeatedly wetting foliage when watering"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/rosa/",
+      "https://agritech.tnau.ac.in/horticulture/horti_flower%20crops_commercial%20rose.html"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "hibiscus",
+    "name": "Hibiscus",
+    "scientific_name": "Hibiscus rosa-sinensis",
+    "aliases": [
+      "Chinese Hibiscus",
+      "China Rose",
+      "Shoe Flower",
+      "Gudhal"
+    ],
+    "light": "Full sun to partial shade, with bright light for container plants. Protect it from strong wind and cold conditions.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "compost": 1,
+      "perlite": 1
+    },
+    "pot_note": "Use a roomy container with drainage holes and a rich, moisture-retentive but well-drained mix. Avoid frequent moves after buds form because environmental changes can trigger bud or leaf drop.",
+    "watering": {
+      "rule": "Keep the root ball moist during active growth, while allowing excess water to drain and avoiding stagnant wet soil.",
+      "by_season": {
+        "summer": "Check the pot frequently in hot weather and water when the mix begins to dry; do not let the root ball dry out completely for long.",
+        "monsoon": "Check the mix before watering, and confirm that the container drains quickly after rain.",
+        "autumn": "Adjust watering as temperatures and growth change; maintain moisture without leaving the pot soggy.",
+        "winter": "Water according to soil moisture and growth; protect the plant from cold and avoid keeping the mix continuously wet."
+      },
+      "avoid": "Avoid waterlogged roots, drought stress during active growth, frost, and repeated sudden changes in location."
+    },
+    "common_mistakes": [
+      "Letting the root ball dry for too long during active growth",
+      "Using a pot with poor drainage",
+      "Moving the plant repeatedly during budding or flowering"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/hibiscus-rosa-sinensis/common-name/chinese-hibiscus/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "marigold",
+    "name": "Marigold (African Marigold)",
+    "scientific_name": "Tagetes erecta",
+    "aliases": [
+      "African Marigold",
+      "Genda",
+      "Gainda",
+      "Marigold",
+      "Pusa Narangi Gainda"
+    ],
+    "light": "Full sun is preferred for flowering. Use a position that receives several hours of direct sunlight.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "compost": 1,
+      "perlite": 1
+    },
+    "pot_note": "Use a container with drainage holes and a well-drained loamy mix. Avoid water stagnation, particularly after heavy rain.",
+    "watering": {
+      "rule": "Water after checking soil moisture; keep the mix reasonably moist during active growth but never stagnant or saturated.",
+      "by_season": {
+        "summer": "Check the container regularly in heat and water when the upper soil begins to dry.",
+        "monsoon": "Check the mix and recent rainfall before watering; prevent water stagnation around roots.",
+        "autumn": "Water when the upper soil begins to dry, adjusting to flowering, warmth, and rainfall.",
+        "winter": "Water according to soil moisture; avoid frequent watering if the pot remains damp in cooler weather."
+      },
+      "avoid": "Avoid water stagnation and allowing the mix to remain saturated after rain."
+    },
+    "common_mistakes": [
+      "Growing in deep shade",
+      "Allowing standing water around roots",
+      "Watering on a fixed schedule without checking soil moisture"
+    ],
+    "sources": [
+      "https://agritech.tnau.ac.in/horticulture/horti_flower%20crops_marigold.html",
+      "https://plants.ces.ncsu.edu/plants/tagetes/"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "curry_leaf",
+    "name": "Curry Leaf Plant",
+    "scientific_name": "Murraya koenigii",
+    "aliases": [
+      "Curry Leaves",
+      "Kadi Patta",
+      "Meetha Neem",
+      "Bergera koenigii"
+    ],
+    "light": "Give it a sunny outdoor position; bright light supports healthy growth.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "compost": 1,
+      "perlite_or_coarse_sand": 1
+    },
+    "pot_note": "Use a deep container with drainage holes and a well-drained mix. Avoid dense, waterlogged soil.",
+    "watering": {
+      "rule": "Water after planting and keep the root zone appropriately moist while it establishes. For established plants, use soil moisture and rainfall to guide watering; field guidance gives weekly irrigation as a general reference, not a universal pot schedule.",
+      "by_season": {
+        "summer": "Check soil more often in hot weather and water when needed; containers can dry faster than field soil.",
+        "monsoon": "Reduce or skip watering when rainfall has moistened the root zone; ensure drainage is unobstructed.",
+        "autumn": "Water according to soil moisture and plant growth rather than a fixed timetable.",
+        "winter": "Check before watering and allow more time between waterings if growth and evaporation slow."
+      },
+      "avoid": "Avoid stagnant water and dense soil that drains poorly."
+    },
+    "common_mistakes": [
+      "Using poorly drained soil",
+      "Watering routinely despite wet soil or rainfall",
+      "Keeping the plant in a low-light indoor location long term"
+    ],
+    "sources": [
+      "https://agritech.tnau.ac.in/horticulture/horti_vegetables_curry%20leaf.html",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "lucky_bamboo",
+    "name": "Lucky Bamboo",
+    "scientific_name": "Dracaena sanderiana",
+    "aliases": [
+      "Water Bamboo",
+      "Friendship Bamboo",
+      "Chinese Water Bamboo",
+      "Dracaena braunii"
+    ],
+    "light": "Bright indirect light or partial shade; keep it out of harsh direct sunlight.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "perlite": 1
+    },
+    "pot_note": "For soil growing, use a moist but well-drained mix and a pot with drainage holes. It can also be grown in chlorine-free water; if grown in water, the soil-mix calculator does not apply and the water should be changed weekly.",
+    "watering": {
+      "rule": "In soil, keep the mix moist but not saturated. In water culture, use chlorine-free water and change it weekly.",
+      "by_season": {
+        "summer": "For soil-grown plants, check moisture more often and keep the mix lightly moist without waterlogging; for water-grown plants, refresh the water weekly.",
+        "monsoon": "Check soil-grown pots before watering and make sure excess water drains; continue the weekly water change for water-grown plants.",
+        "autumn": "Keep soil lightly moist according to drying; in water culture, continue weekly water changes.",
+        "winter": "Check the soil before watering and protect from cold drafts; continue weekly water changes if grown in water."
+      },
+      "avoid": "Avoid waterlogged potting mix, prolonged harsh direct sunlight, and stagnant water."
+    },
+    "common_mistakes": [
+      "Confusing the plant with true bamboo",
+      "Allowing soil to remain waterlogged",
+      "Leaving water culture unchanged for long periods",
+      "Exposing the plant to harsh direct sun"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/dracaena-sanderiana/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  },
+  {
+    "id": "rubber_plant",
+    "name": "Rubber Plant",
+    "scientific_name": "Ficus elastica",
+    "aliases": [
+      "Indian Rubber Plant",
+      "Rubber Tree",
+      "Ficus elastica"
+    ],
+    "light": "Bright indirect light or partial shade; protect it from harsh afternoon sun and cold drafts.",
+    "soil_mix_parts": {
+      "potting_mix": 2,
+      "perlite": 1
+    },
+    "pot_note": "Use a soil-based, well-drained potting mix and a stable pot with drainage holes. Keep it in a consistent position and wipe dust from leaves with a soft damp cloth.",
+    "watering": {
+      "rule": "Water regularly during active growth but avoid overwatering. Let excess water drain and reduce watering when growth slows in cooler months.",
+      "by_season": {
+        "summer": "Check the surface regularly and water when needed; do not allow the pot to remain saturated.",
+        "monsoon": "Check moisture before watering and empty the saucer; humid conditions can slow drying.",
+        "autumn": "Begin adjusting watering as growth slows, checking the soil before each watering.",
+        "winter": "Water less often during slower growth; do not water again while the mix is still wet."
+      },
+      "avoid": "Avoid overwatering, cold drafts, sudden temperature changes, and constantly moving the plant."
+    },
+    "common_mistakes": [
+      "Overwatering",
+      "Placing it in cold drafts",
+      "Moving it frequently",
+      "Allowing dust to accumulate on leaves"
+    ],
+    "sources": [
+      "https://plants.ces.ncsu.edu/plants/ficus-elastica/common-name/indian-rubber-plant/",
+      "https://www.extension.umd.edu/resource/potting-and-repotting-indoor-plants"
+    ],
+    "own_experience_note": ""
+  }
+]

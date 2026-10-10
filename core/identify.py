@@ -10,9 +10,9 @@ from __future__ import annotations
 import base64
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import requests
 
@@ -36,25 +36,39 @@ class OllamaModelError(IdentificationError):
 
 @dataclass(frozen=True)
 class IdentificationResult:
-    """The model prediction and its optional trusted-data match."""
+    """Validated plant-identification output for the application UI."""
 
-    predicted_name: str
-    plant_id: str | None
+    is_plant: bool
+    status: Literal["identified", "uncertain", "not_plant"]
+    common_name: str | None
+    scientific_name: str | None
+    confidence: float | None
+    candidates: list[str]
     raw_response: str
+    plant_id: str | None
+
+    @property
+    def predicted_name(self) -> str:
+        """Backward-compatible display name for callers of the old result."""
+
+        return self.common_name or "Unknown plant"
 
 
 def load_known_plants(path: str | Path = DEFAULT_PLANTS_PATH) -> list[dict[str, Any]]:
-    """Load plant records without modifying or enriching the trusted JSON."""
+    """Load trusted plant records, treating empty or invalid data as unavailable."""
 
     plants_path = Path(path)
     if not plants_path.exists():
         return []
     try:
-        payload = json.loads(plants_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise IdentificationError(f"Could not read plant data: {exc}") from exc
+        contents = plants_path.read_text(encoding="utf-8").strip()
+        if not contents:
+            return []
+        payload = json.loads(contents)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return []
     if not isinstance(payload, list):
-        raise IdentificationError("Plant data must contain a JSON list.")
+        return []
     return [plant for plant in payload if isinstance(plant, dict)]
 
 
@@ -66,29 +80,112 @@ def _match_known_plant(prediction: str, plants: list[dict[str, Any]]) -> tuple[s
     normalised_prediction = _normalise(prediction)
     for plant in plants:
         plant_id = str(plant.get("id", "")).strip()
-        names = [plant.get("name", ""), plant_id, *(plant.get("aliases", []) or [])]
+        aliases = plant.get("aliases", [])
+        if not isinstance(aliases, list):
+            aliases = []
+        names = [plant.get("name", ""), plant_id, *aliases]
         for name in names:
-            if name and _normalise(str(name)) in normalised_prediction:
+            if name and _normalise(str(name)) == normalised_prediction:
                 return plant_id, str(plant.get("name") or plant_id)
     return None
 
 
-def _parse_prediction(response_text: str) -> str:
-    """Extract a concise plant name from common Gemma response formats."""
+def _normalise_candidates(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    candidates: list[str] = []
+    for item in value:
+        if isinstance(item, str) and item.strip() and item.strip() not in candidates:
+            candidates.append(item.strip())
+    return candidates
+
+
+def _clean_json_response(response_text: str) -> str:
+    """Remove common Markdown wrapping and isolate a JSON object if possible."""
 
     text = response_text.strip()
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE)
+    text = text.strip()
+    if not text.startswith("{"):
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            text = text[start : end + 1]
+    return text
+
+
+def _parse_identification(response_text: str) -> IdentificationResult:
+    """Parse and validate model output without allowing bad output to crash the app."""
+
+    uncertain = IdentificationResult(
+        is_plant=True,
+        status="uncertain",
+        common_name=None,
+        scientific_name=None,
+        confidence=None,
+        candidates=[],
+        raw_response=response_text,
+        plant_id=None,
+    )
+
     try:
-        parsed = json.loads(text)
-    except json.JSONDecodeError:
-        parsed = None
-    if isinstance(parsed, dict):
-        for key in ("plant_id", "plant_name", "name", "prediction"):
-            value = parsed.get(key)
-            if isinstance(value, str) and value.strip():
-                return value.strip()
-    text = re.sub(r"```(?:json)?|```", "", text, flags=re.IGNORECASE).strip()
-    text = re.sub(r"^(?:plant\s*(?:name|identified as|is)\s*:\s*)", "", text, flags=re.IGNORECASE)
-    return text.splitlines()[0].strip(" -*\t") or "Unknown plant"
+        parsed = json.loads(_clean_json_response(response_text))
+    except (TypeError, json.JSONDecodeError):
+        return uncertain
+    if not isinstance(parsed, dict):
+        return uncertain
+
+    is_plant = parsed.get("is_plant")
+    if is_plant is False or parsed.get("status") == "not_plant":
+        return IdentificationResult(
+            is_plant=False,
+            status="not_plant",
+            common_name=None,
+            scientific_name=None,
+            confidence=None,
+            candidates=[],
+            raw_response=response_text,
+            plant_id=None,
+        )
+    if is_plant is not True:
+        return uncertain
+
+    status = parsed.get("status")
+    if status not in {"identified", "uncertain"}:
+        status = "uncertain"
+    common_name = parsed.get("common_name")
+    if not isinstance(common_name, str) or not common_name.strip():
+        common_name = None
+    elif _normalise(common_name) in {"unknown", "unknown plant", "none", "null"}:
+        common_name = None
+
+    scientific_name = parsed.get("scientific_name")
+    if not isinstance(scientific_name, str) or not scientific_name.strip():
+        scientific_name = None
+
+    confidence = parsed.get("confidence")
+    if isinstance(confidence, int | float) and not isinstance(confidence, bool):
+        confidence = float(confidence)
+        if confidence > 1 and confidence <= 100:
+            confidence /= 100
+        if not 0 <= confidence <= 1:
+            confidence = None
+    else:
+        confidence = None
+
+    candidates = _normalise_candidates(parsed.get("candidates"))
+    if common_name is None or status == "uncertain" or confidence is None or confidence < 0.65:
+        status = "uncertain"
+    return IdentificationResult(
+        is_plant=True,
+        status=status,
+        common_name=common_name,
+        scientific_name=scientific_name,
+        confidence=confidence,
+        candidates=candidates,
+        raw_response=response_text,
+        plant_id=None,
+    )
 
 
 def identify_plant(
@@ -104,15 +201,21 @@ def identify_plant(
     if not image_bytes:
         raise IdentificationError("The uploaded image is empty.")
     prompt = (
-        "Identify the plant in this image. Reply with only the most likely common "
-        "plant name, or Unknown plant if you cannot identify it. Do not provide "
-        "care advice."
+        "Inspect the image and return JSON only, with exactly these fields: "
+        "is_plant (boolean), status (identified, uncertain, or not_plant), "
+        "common_name (string or null), scientific_name (string or null), "
+        "confidence (number from 0 to 1 or null), and candidates (array of strings). "
+        "Set not_plant when the image does not show a plant. Set uncertain when "
+        "the image is blurry, ambiguous, or insufficient, or confidence is low. "
+        "Identify the plant only when reasonably possible. Never provide care advice. "
+        "Never include or invent a plant_id; the application assigns trusted IDs."
     )
     payload = {
         "model": model,
         "prompt": prompt,
         "images": [base64.b64encode(image_bytes).decode("ascii")],
         "stream": False,
+        "format": "json",
     }
     endpoint = f"{ollama_url.rstrip('/')}/api/generate"
     try:
@@ -132,13 +235,21 @@ def identify_plant(
         body = response.json()
     except ValueError as exc:
         raise OllamaModelError("Ollama returned an invalid JSON response.") from exc
+    if not isinstance(body, dict):
+        return _parse_identification("")
     raw_response = body.get("response")
     if not isinstance(raw_response, str) or not raw_response.strip():
-        raise OllamaModelError("Ollama returned no plant identification.")
+        return _parse_identification("")
 
-    predicted_name = _parse_prediction(raw_response)
-    known_match = _match_known_plant(predicted_name, load_known_plants(plants_path))
-    plant_id = known_match[0] if known_match else None
-    if known_match:
-        predicted_name = known_match[1]
-    return IdentificationResult(predicted_name, plant_id, raw_response)
+    result = _parse_identification(raw_response)
+    if result.status != "identified" or not result.common_name:
+        return result
+    plants = load_known_plants(plants_path)
+    known_match = None
+    for name in [result.common_name, *result.candidates]:
+        known_match = _match_known_plant(name, plants)
+        if known_match:
+            break
+    if not known_match:
+        return result
+    return replace(result, common_name=known_match[1], plant_id=known_match[0])

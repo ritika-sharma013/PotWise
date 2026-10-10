@@ -1,0 +1,1836 @@
+{
+  "dataset_name": "PotWise Plant Problem Helper — Research Draft",
+  "version": "0.1.0",
+  "research_date": "2026-10-10",
+  "status": "initial research draft — review before production use",
+  "intended_use": "Rule-based, cautious screening and follow-up questions for 15 supported plants; not a validated diagnostic system.",
+  "design_principle": "Plant-specific symptom evidence + user observations + actual conditions + season/weather context. Do not use season as a proxy for pot moisture.",
+  "global_diagnostic_policy": [
+    "This database is a screening aid, not a definitive plant disease diagnosis.",
+    "Never map a single symptom to a single cause without considering alternate explanations.",
+    "For every watering recommendation, check moisture in the root zone, drainage and actual rain exposure before suggesting water.",
+    "Use season and weather as context only; never infer that rain reached a pot or that a plant needs more/less water from month alone.",
+    "Prefer low-risk cultural steps: observe, inspect, isolate suspected pests, improve confirmed drainage/airflow issues, and remove clearly dead material. Avoid pesticide specifics unless pest identity, local registration, crop context and product-label directions are verified.",
+    "When symptoms are severe, rapidly spreading, or diagnosis remains uncertain, recommend a local horticulture extension service, nursery specialist, or plant clinic.",
+    "Distinguish plant-specific evidence from general indoor-plant pest or light guidance in UI wording.",
+    "Do not claim that a listed symptom proves a named disease; use language like “possible cause” and explain which clues support it."
+  ],
+  "seasonal_context_rules": [
+    {
+      "condition_id": "hot_dry_or_heatwave",
+      "label": "Hot, dry spell / heatwave",
+      "check_first": [
+        "Check root-zone moisture rather than surface appearance alone.",
+        "Ask whether the plant receives direct sun, hot wind, or heat reflecting off a wall.",
+        "Check for scorch and wilting, but do not assume water is always the cause."
+      ],
+      "interpretation": "High heat and stronger light can increase water use for some plants and increase scorch risk; response varies by species, pot, substrate, and exposure.",
+      "must_not_assume": [
+        "Do not automatically increase watering solely because it is summer.",
+        "Do not move a shade-adapted plant suddenly into intense direct sun."
+      ],
+      "source_ids": [
+        "UMN_Lighting",
+        "UMN_Spring"
+      ]
+    },
+    {
+      "condition_id": "rainy_or_persistently_wet_spell",
+      "label": "Rainy spell / prolonged wet weather",
+      "check_first": [
+        "Ask whether rain actually reaches this pot; a covered balcony or indoor plant may receive none.",
+        "Check moisture below the surface and whether drainage holes are clear.",
+        "Check if the saucer/cachepot holds water and whether foliage stays wet for long periods."
+      ],
+      "interpretation": "Rain exposure and slow drying can make excess moisture more plausible, but a rainy forecast does not prove that a particular pot is wet.",
+      "must_not_assume": [
+        "Do not assume every pot received rain during monsoon or a rainy season.",
+        "Do not water or withhold water based only on a seasonal label; inspect the mix."
+      ],
+      "source_ids": [
+        "TNAU_Tulsi",
+        "TNAU_Marigold",
+        "NC_Aloe",
+        "WI_Pothos"
+      ]
+    },
+    {
+      "condition_id": "cool_or_low_light_period",
+      "label": "Cooler period / reduced light",
+      "check_first": [
+        "Check whether growth has slowed and how long the mix now takes to dry.",
+        "Review available daylight and any new cold drafts.",
+        "Compare current conditions with the plant-specific needs."
+      ],
+      "interpretation": "Lower light often slows growth and water use, so soil may dry more slowly. Seasonal rules should influence questions, not impose a fixed watering schedule.",
+      "must_not_assume": [
+        "Do not use a universal winter watering frequency for all species and climates.",
+        "Do not treat slow growth alone as disease."
+      ],
+      "source_ids": [
+        "UMN_Lighting",
+        "UMN_Winter",
+        "NC_Snake",
+        "NC_Rubber"
+      ]
+    },
+    {
+      "condition_id": "rapid_light_or_temperature_change",
+      "label": "Recent move / abrupt light or temperature change",
+      "check_first": [
+        "Ask about relocation, repotting, open windows, heating/cooling airflow, and sudden sun exposure.",
+        "Look for scorch, bud drop, or symptoms concentrated on exposed tissue."
+      ],
+      "interpretation": "A recent environmental change can explain some leaf/bud drop or scorch; change only one care factor at a time and observe new growth.",
+      "must_not_assume": [
+        "Do not immediately add fertilizer or pesticide without supporting clues."
+      ],
+      "source_ids": [
+        "NC_Hibiscus",
+        "NC_Rubber",
+        "UMN_Spring"
+      ]
+    },
+    {
+      "condition_id": "hot_humid_no_rain",
+      "label": "Warm and humid, but little/no actual rain",
+      "check_first": [
+        "Do not infer root wetness from humidity alone.",
+        "Check actual soil moisture, airflow, pest signs and whether foliage stays wet."
+      ],
+      "interpretation": "Humidity and rain exposure are distinct variables. High humidity may affect drying and disease risk for some plants, but pot moisture must be observed directly.",
+      "must_not_assume": [
+        "Do not equate high humidity with a watered root zone.",
+        "Do not mark a rain-exposed plant unless the user confirms exposure."
+      ],
+      "source_ids": [
+        "TNAU_RosePowdery",
+        "NC_Areca",
+        "NC_PeaceLily"
+      ]
+    }
+  ],
+  "sources": {
+    "NC_Aloe": {
+      "title": "Aloe Vera — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/aloe-vera/common-name/aloe-vera/",
+      "scope": "Plant-specific care, pests, leaf spot/rust, and overwatering/root rot."
+    },
+    "KY_AloeSpots": {
+      "title": "Spots on aloe — Ask Extension",
+      "organization": "University of Kentucky / Ask Extension",
+      "url": "https://ask.extension.org/kb/faq.php?id=285650",
+      "scope": "Aloe leaf spots and tip dieback can have moisture-related, disease, or pest causes; emphasizes diagnosis rather than assuming one cause."
+    },
+    "WI_Pothos": {
+      "title": "Pothos (Epipremnum aureum) — Wisconsin Horticulture",
+      "organization": "University of Wisconsin–Madison Extension",
+      "url": "https://hort.extension.wisc.edu/articles/pothos-epipremmum-aureum/",
+      "scope": "Pothos-specific yellowing, root rot, brown margins/tips, pests, and care."
+    },
+    "UMD_Pothos": {
+      "title": "Pothos plant has yellow leaf and brown-spotted leaf — Ask Extension",
+      "organization": "University of Maryland Extension / Ask Extension",
+      "url": "https://ask.extension.org/kb/faq.php?id=855914",
+      "scope": "Example diagnostic response emphasizing moisture, light, pests, normal old-leaf ageing, and uncertainty around leaf spots."
+    },
+    "TNAU_Tulsi": {
+      "title": "Horticulture: Medicinal Crops — Tulsi",
+      "organization": "Tamil Nadu Agricultural University",
+      "url": "https://www.agritech.tnau.ac.in/horticulture/horti_medicinal%20crops_tulsi.html",
+      "scope": "Tulsi cultivation, rainfall/soil-moisture-based irrigation, leaf rollers, powdery mildew, and root-rot/seedling-blight mention."
+    },
+    "NC_Tulsi": {
+      "title": "Tulsi — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/ocimum-tenuiflorum/common-name/tulsi/",
+      "scope": "Species identity and general cultivation reference; use alongside TNAU for pest/disease notes."
+    },
+    "NC_Snake": {
+      "title": "Snake Plant (Dracaena trifasciata) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/dracaena-trifasciata/common-name/snake-plant/",
+      "scope": "Snake-plant watering, root rot risk, and monitoring for mealybugs/spider mites."
+    },
+    "NC_Dracaena": {
+      "title": "Dracaena — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/dracaena/",
+      "scope": "General Dracaena-family risk clues: waterlogging/root rot, leaf spot, browning from salts/low humidity, and leaf scorch."
+    },
+    "NC_Spider": {
+      "title": "Spider Plant (Chlorophytum comosum) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/chlorophytum-comosum/common-name/chlorophytum/",
+      "scope": "Spider-plant-specific light, moisture, tap-water sensitivity and leaf-tip burn."
+    },
+    "NC_SpiderVariegated": {
+      "title": "Reverse Spider Plant — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/chlorophytum-comosum-variegatum/common-name/reverse-spider-plant/",
+      "scope": "Cultivar page mentions waterlogging/root rot, brown tips, pest monitoring, and sun scorch; use as supporting genus-level context."
+    },
+    "NC_ZZ": {
+      "title": "ZZ Plant (Zamioculcas zamiifolia) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/zamioculcas-zamiifolia/common-name/zz-plant/",
+      "scope": "ZZ plant identification and pest notes; generally low pest burden with scale monitoring."
+    },
+    "UF_ZZ": {
+      "title": "Florida Foliage House Plant Care: ZZ Plant",
+      "organization": "University of Florida IFAS Extension",
+      "url": "https://ask.ifas.ufl.edu/publication/EP480",
+      "scope": "ZZ plant: drought tolerance, scale, prolonged wet soil/root rot and cold-related discoloration."
+    },
+    "Ask_ZZ": {
+      "title": "ZZ Plant — Ask Extension",
+      "organization": "University of Maryland Extension / Ask Extension",
+      "url": "https://ask.extension.org/kb/faq.php?id=896161",
+      "scope": "Yellowing may relate to over-/underwatering, nutrition, or normal older-leaf ageing; an example, not a universal diagnostic rule."
+    },
+    "NC_Jade": {
+      "title": "Jade Plant (Crassula ovata) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/crassula-ovata/",
+      "scope": "Jade plant root rot/leaf fall from overwatering and common sap-feeding pests."
+    },
+    "NC_Areca": {
+      "title": "Areca Palm (Chrysalidocarpus lutescens) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/chrysalidocarpus-lutescens/common-name/yellow-palm/",
+      "scope": "Areca palm indoor light/humidity preferences and susceptibility to scale, whiteflies and spider mites."
+    },
+    "NC_PeaceLily": {
+      "title": "Peace Lily (Spathiphyllum) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/spathiphyllum/common-name/peace-lily/",
+      "scope": "Peace-lily care, brown leaf tips, mealybugs, cold stress, and fertilizer/salt issues."
+    },
+    "NC_Rose": {
+      "title": "Roses (Rosa) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/rosa/common-name/roses/",
+      "scope": "Rose pest and disease list, including mites, thrips, powdery mildew and leaf spots."
+    },
+    "TNAU_RoseBlackSpot": {
+      "title": "Rose diseases: Black spot — TNAU Crop Protection",
+      "organization": "Tamil Nadu Agricultural University",
+      "url": "https://agritech.tnau.ac.in/crop_protection/rose_diseases_1.html",
+      "scope": "Black spot signature: black lesions with feathery margins/yellow tissue and premature leaf fall; cultural prevention."
+    },
+    "TNAU_RosePowdery": {
+      "title": "Rose diseases: Powdery mildew — TNAU Crop Protection",
+      "organization": "Tamil Nadu Agricultural University",
+      "url": "https://agritech.tnau.ac.in/crop_protection/rose_diseases_2.html",
+      "scope": "Powdery mildew signature on young leaves, shoots and buds; distortion and poor bud opening; seasonal conditions noted."
+    },
+    "NC_Hibiscus": {
+      "title": "Chinese Hibiscus (Hibiscus rosa-sinensis) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/hibiscus-rosa-sinensis/common-name/hibiscus/",
+      "scope": "Hibiscus sensitivity to environmental change and bud/leaf drop after moving; scale monitoring."
+    },
+    "TNAU_Marigold": {
+      "title": "Horticulture: Flower Crops — Marigold",
+      "organization": "Tamil Nadu Agricultural University",
+      "url": "https://www.agritech.tnau.ac.in/horticulture/horti_flower%20crops_marigold.html",
+      "scope": "Marigold pest signs (mealybug, thrips), leaf spot/root rot and water stagnation cautions; pesticide rates intentionally not carried into consumer advice."
+    },
+    "NC_Marigold": {
+      "title": "Marigold (Tagetes) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/tagetes/common-name/marigold/",
+      "scope": "Marigold susceptibility to wilt, stem rot, leaf spots, botrytis and aster yellows; spider mites and slugs."
+    },
+    "ICAR_CurryBeetle": {
+      "title": "Sporadic outbreak of curry leaf tortoise beetle on curry leaf — Pest Management in Horticultural Ecosystems",
+      "organization": "Indian Agricultural Research Institute / ICAR-NBAIR authors; journal record",
+      "url": "https://indianjournals.com/article/pmhe-27-2-031",
+      "scope": "India-based research reporting tortoise beetle infestation on curry leaf; supports inspecting for leaf-chewing beetle damage, not a universal prevalence claim."
+    },
+    "Ask_Curry": {
+      "title": "Curry leaf plant dying from top — Ask Extension",
+      "organization": "Ask Extension",
+      "url": "https://ask.extension.org/kb/faq.php?id=272106",
+      "scope": "Case-specific expert reply considered overwatering after recent transplanting/frequent daily watering; low-strength anecdotal support only."
+    },
+    "NC_LuckyBamboo": {
+      "title": "Lucky Bamboo (Dracaena sanderiana) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/dracaena-sanderiana/",
+      "scope": "Lucky bamboo yellowing/stem rot with excess water, brown tips with low humidity, and mealybug/mites/scale monitoring."
+    },
+    "NC_Rubber": {
+      "title": "Rubber Plant (Ficus elastica) — North Carolina Extension Plant Toolbox",
+      "organization": "NC State Extension",
+      "url": "https://plants.ces.ncsu.edu/plants/ficus-elastica/common-name/indian-rubber-plant/",
+      "scope": "Rubber plant leaf drop from overwatering/cold drafts, normal lower-leaf ageing, and mealybug/scale/spider-mite risk."
+    },
+    "UMD_IndoorDiagnosis": {
+      "title": "Diagnose Indoor Plant Problems",
+      "organization": "University of Maryland Extension",
+      "url": "https://extension.umd.edu/resource/diagnose-indoor-plant-problems",
+      "scope": "General indoor-plant differential diagnosis using visible pest clues, root condition and symptoms; not plant-specific."
+    },
+    "UMD_IndoorInsects": {
+      "title": "Indoor Plant Insects",
+      "organization": "University of Maryland Extension",
+      "url": "https://extension.umd.edu/resources/yard-garden/indoor-plants/indoor-plant-insects",
+      "scope": "General pest monitoring and linked identification resources for mealybugs, scale, mites, thrips, aphids, whiteflies and fungus gnats."
+    },
+    "UMD_Mealybugs": {
+      "title": "Mealybugs on Indoor Plants",
+      "organization": "University of Maryland Extension",
+      "url": "https://extension.umd.edu/resource/mealybugs-indoor-plants",
+      "scope": "White cottony wax, leaf/stem/underside location, honeydew/sooty mold, yellowing/stunting clues."
+    },
+    "UMN_Lighting": {
+      "title": "Lighting for indoor plants and starting seeds",
+      "organization": "University of Minnesota Extension",
+      "url": "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/lighting-for-indoor-plants",
+      "scope": "Light level changes growth and water use; plants in lower light tend to grow more slowly and use less water."
+    },
+    "UMN_Spring": {
+      "title": "Spring houseplant care",
+      "organization": "University of Minnesota Extension",
+      "url": "https://extension.umn.edu/houseplants/spring-houseplant-care",
+      "scope": "Seasonal change and stronger spring light; transition plants gradually to brighter conditions to reduce scorch risk."
+    },
+    "UMN_Winter": {
+      "title": "Winter houseplant tips",
+      "organization": "University of Minnesota Extension",
+      "url": "https://extension.umn.edu/about/our-stories/news/winter-houseplant-tips",
+      "scope": "Reduced winter light, stretching toward light, indoor pest checks and monitoring."
+    }
+  },
+  "plants": [
+    {
+      "plant_id": "aloe_vera",
+      "display_name": "Aloe Vera",
+      "scientific_name": "Aloe vera",
+      "problems": [
+        {
+          "problem_id": "aloe_wet_soft_leaves",
+          "display_title": "Soft, yellowing or water-soaked leaves",
+          "symptom_labels": [
+            "yellow leaves",
+            "soft or translucent leaf tissue",
+            "water-soaked spots"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Excess moisture or poor drainage; root damage is possible",
+              "supporting_clues": [
+                "Potting mix remains wet for an unusually long time",
+                "Leaf base or roots are soft/brown rather than firm",
+                "Pot lacks drainage holes or excess water collects in a cachepot"
+              ]
+            },
+            {
+              "cause": "Leaf spot or another disease",
+              "supporting_clues": [
+                "Distinct lesions persist or spread despite correcting watering",
+                "Spots are black or otherwise patterned rather than uniform yellowing"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "How long has the soil stayed wet?",
+            "Are the leaves firm, or soft/mushy?",
+            "Does the pot drain freely?",
+            "Are spots spreading to new leaves?"
+          ],
+          "safe_next_steps": [
+            "Check moisture below the surface before watering again.",
+            "Confirm the pot has working drainage and empty collected runoff.",
+            "If inspecting roots, look for soft, dark, decayed roots; seek local horticulture advice if lesions keep spreading."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not recommend extra water based on drooping alone.",
+            "Do not label a leaf spot as a confirmed fungal disease from an image alone."
+          ],
+          "source_ids": [
+            "NC_Aloe",
+            "KY_AloeSpots"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": "Both moisture stress and leaf disease/pests can produce spots; symptom alone is insufficient."
+        },
+        {
+          "problem_id": "aloe_visible_pests",
+          "display_title": "Spots plus visible insects or cottony material",
+          "symptom_labels": [
+            "cottony white clusters",
+            "visible small insects",
+            "black or rusty spots"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Mealybugs or aphids; scale, mites or leaf-spot diseases are also possible",
+              "supporting_clues": [
+                "White cottony clusters on leaf bases or undersides",
+                "Visible insects or persistent lesions"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Can you see insects or cottony material at the leaf base or underside?",
+            "Are lesions spreading, or are they stable?"
+          ],
+          "safe_next_steps": [
+            "Isolate the plant from nearby plants while checking it.",
+            "Inspect leaf bases and undersides; remove only badly affected tissue with clean tools when needed.",
+            "Use a plant-specific, locally approved control only after the pest is identified."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not apply a pesticide mixture or household chemical without correct identification and label directions."
+          ],
+          "source_ids": [
+            "NC_Aloe",
+            "KY_AloeSpots",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_screening",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "money_plant",
+      "display_name": "Money Plant (Pothos)",
+      "scientific_name": "Epipremnum aureum",
+      "problems": [
+        {
+          "problem_id": "pothos_yellow_leaves",
+          "display_title": "Yellowing leaves or leaf drop",
+          "symptom_labels": [
+            "yellow leaves",
+            "limp yellow leaves",
+            "leaf drop"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Overwatering/root stress",
+              "supporting_clues": [
+                "Mix remains damp or saturated",
+                "Drainage is poor",
+                "Roots are brown, soft or sparse if inspected"
+              ]
+            },
+            {
+              "cause": "Low light or normal ageing of older leaves",
+              "supporting_clues": [
+                "Only the oldest leaves yellow gradually",
+                "Plant receives very little usable light",
+                "No pests are visible and remaining growth looks healthy"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are the yellow leaves mostly older leaves near the base or new leaves?",
+            "Does the mix feel wet, slightly moist, or dry below the surface?",
+            "How much natural or grow light reaches the plant?"
+          ],
+          "safe_next_steps": [
+            "Check moisture before watering; pothos should not stay constantly damp.",
+            "Empty runoff from a saucer or decorative outer pot.",
+            "If yellowing continues, inspect the undersides and review light level."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not treat every older yellow leaf as a disease.",
+            "Do not water by a fixed calendar if the mix is still damp."
+          ],
+          "source_ids": [
+            "WI_Pothos",
+            "UMD_Pothos"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": "The sources explicitly note several possible causes and normal ageing of older leaves."
+        },
+        {
+          "problem_id": "pothos_brown_tips_spots",
+          "display_title": "Brown tips, margins or leaf spots",
+          "symptom_labels": [
+            "brown leaf tips",
+            "blackened leaf margins",
+            "brown spots"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Inconsistent watering or excess fertilizer/salt buildup",
+              "supporting_clues": [
+                "Tips or edges brown; watering alternates between very dry and wet",
+                "Recent or frequent fertilizer use"
+              ]
+            },
+            {
+              "cause": "Pest or disease damage",
+              "supporting_clues": [
+                "Spots spread to new leaves",
+                "Pests or feeding marks appear underneath leaves"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Has the plant recently been fertilized or sprayed?",
+            "Do spots appear on new leaves?",
+            "Can you see pests underneath leaves?"
+          ],
+          "safe_next_steps": [
+            "Check the recent watering and fertilizer history.",
+            "Inspect leaf undersides; remove severely spotted leaves only if needed.",
+            "Avoid routine leaf misting; improve general care and monitor whether new damage appears."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume all brown spots are pests or infection.",
+            "Do not suggest an unverified home spray."
+          ],
+          "source_ids": [
+            "WI_Pothos",
+            "UMD_Pothos",
+            "UMD_IndoorDiagnosis"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "pothos_leggy_growth",
+          "display_title": "Sparse, stretched or leggy vines",
+          "symptom_labels": [
+            "leggy growth",
+            "long spaces between leaves",
+            "growth leaning toward window"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Insufficient usable light",
+              "supporting_clues": [
+                "Vines stretch toward a light source",
+                "Growth becomes sparse or weak",
+                "Plant has only dim room light"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Does the plant lean toward a window or lamp?",
+            "Has its light exposure changed with the season?"
+          ],
+          "safe_next_steps": [
+            "Move it gradually to brighter appropriate indirect light or add suitable grow lighting.",
+            "Rotate periodically for more even exposure."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not move it suddenly into harsh direct sun; acclimate gradually."
+          ],
+          "source_ids": [
+            "UMD_Pothos",
+            "UMN_Lighting",
+            "UMN_Spring"
+          ],
+          "evidence_scope": "plant_specific_plus_general_light_guidance",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "tulsi",
+      "display_name": "Tulsi (Holy Basil)",
+      "scientific_name": "Ocimum tenuiflorum",
+      "problems": [
+        {
+          "problem_id": "tulsi_powdery_mildew",
+          "display_title": "White powdery coating on leaves or shoots",
+          "symptom_labels": [
+            "white powdery coating",
+            "distorted young leaves",
+            "affected shoots"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Possible powdery mildew",
+              "supporting_clues": [
+                "Powder-like white growth on leaf surfaces or young shoots",
+                "New leaves appear distorted"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Does the white material look powdery and recur after gentle wiping?",
+            "Are young leaves or shoots distorted?",
+            "Is the plant crowded with poor airflow?"
+          ],
+          "safe_next_steps": [
+            "Remove heavily affected fallen or detached material.",
+            "Improve spacing and airflow and avoid keeping the foliage persistently wet.",
+            "Seek local plant-diagnostic advice if it spreads or affects many plants."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not claim confirmed mildew from a photo alone.",
+            "Do not recommend chemical treatment rates copied from field-crop guidance for a potted household plant."
+          ],
+          "source_ids": [
+            "TNAU_Tulsi"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": "TNAU lists powdery mildew; the safe steps are conservative cultural measures, not chemical prescriptions."
+        },
+        {
+          "problem_id": "tulsi_rolled_or_eaten_leaves",
+          "display_title": "Rolled leaves or chewed young growth",
+          "symptom_labels": [
+            "rolled leaves",
+            "holes in leaves",
+            "chewed young shoots"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Leaf-roller or other leaf-feeding insect activity",
+              "supporting_clues": [
+                "Leaves are folded/rolled together",
+                "Chewing marks or larvae are visible inside rolled leaves"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are leaves rolled around a visible insect or silk?",
+            "Can you see larvae, frass, or fresh chewing?"
+          ],
+          "safe_next_steps": [
+            "Inspect rolled leaves and leaf undersides.",
+            "On a small potted plant, remove clearly infested leaves or visible pests by hand and monitor new growth.",
+            "Confirm the pest before choosing any treatment."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not spray broad-spectrum pesticide without identifying the pest."
+          ],
+          "source_ids": [
+            "TNAU_Tulsi",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_safe_IPM",
+          "evidence_notes": "TNAU identifies leaf rollers as a minor Tulsi pest; hand-removal is a conservative screening action."
+        },
+        {
+          "problem_id": "tulsi_wilt_wet_soil",
+          "display_title": "Wilting or decline while soil stays wet",
+          "symptom_labels": [
+            "wilting",
+            "yellowing",
+            "stem/seedling collapse"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Excess water, drainage problems or root/seedling disease",
+              "supporting_clues": [
+                "Soil remains saturated",
+                "Plant wilts despite wet soil",
+                "Stem base or roots look dark/soft"
+              ]
+            },
+            {
+              "cause": "Underwatering or heat stress",
+              "supporting_clues": [
+                "Root zone is dry and pot is light",
+                "Symptoms follow a hot, dry spell"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the soil wet or dry several centimetres down?",
+            "Does water drain from the pot?",
+            "Was there recent rain or a heat spell?"
+          ],
+          "safe_next_steps": [
+            "Check root-zone moisture and drainage before adding water.",
+            "Keep the plant out of standing water; remove a badly collapsed seedling and inspect nearby plants."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume wilt always means thirst.",
+            "Do not treat root rot or seedling blight as confirmed without stronger evidence."
+          ],
+          "source_ids": [
+            "TNAU_Tulsi",
+            "UMN_Lighting"
+          ],
+          "evidence_scope": "plant_specific_plus_general_moisture_guidance",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "snake_plant",
+      "display_name": "Snake Plant",
+      "scientific_name": "Dracaena trifasciata",
+      "problems": [
+        {
+          "problem_id": "snake_yellow_soft_base",
+          "display_title": "Yellow, soft or collapsing leaves near the base",
+          "symptom_labels": [
+            "yellow leaves",
+            "soft base",
+            "leaves collapsing"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Overwatering or root/rhizome rot",
+              "supporting_clues": [
+                "Mix remains wet between waterings",
+                "Leaf bases become soft or mushy",
+                "Pot drainage is poor"
+              ]
+            },
+            {
+              "cause": "Natural ageing of an isolated older leaf",
+              "supporting_clues": [
+                "One older leaf changes slowly while other leaves remain firm"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the affected leaf one of the oldest, or are several leaves affected?",
+            "Is the potting mix completely dry, moist, or wet?",
+            "Are leaf bases firm?"
+          ],
+          "safe_next_steps": [
+            "Check the mix and drainage before watering.",
+            "Allow the mix to dry appropriately for this drought-tolerant plant.",
+            "If the base is soft or decline is spreading, inspect roots/rhizomes and seek help if needed."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not water on a weekly schedule regardless of soil condition.",
+            "Do not assume one slowly dying older leaf means whole-plant disease."
+          ],
+          "source_ids": [
+            "NC_Snake",
+            "NC_Dracaena"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "snake_pests_or_scorch",
+          "display_title": "Cottony pests, fine webbing or bleached/scorched patches",
+          "symptom_labels": [
+            "cottony white insects",
+            "fine webbing",
+            "pale or scorched patches"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Mealybugs or spider mites",
+              "supporting_clues": [
+                "Cottony clusters near leaf bases",
+                "Fine webbing or tiny moving specks"
+              ]
+            },
+            {
+              "cause": "Light scorch after strong direct sun",
+              "supporting_clues": [
+                "Bleached or dry patches on sun-facing leaves after a sudden light change"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Can you see cottony material or webbing?",
+            "Was the plant moved into stronger sun recently?"
+          ],
+          "safe_next_steps": [
+            "Inspect leaf bases and undersides; isolate if pests are suspected.",
+            "If scorch followed sudden sun exposure, return to suitable bright indirect/partial light and acclimate gradually."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not treat scorch as infectious disease without supporting clues."
+          ],
+          "source_ids": [
+            "NC_Snake",
+            "NC_Dracaena",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_screening",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "spider_plant",
+      "display_name": "Spider Plant",
+      "scientific_name": "Chlorophytum comosum",
+      "problems": [
+        {
+          "problem_id": "spider_brown_tips",
+          "display_title": "Brown or crispy leaf tips",
+          "symptom_labels": [
+            "brown tips",
+            "crispy leaf ends"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Water-quality sensitivity (salts/chlorine/fluoride), too little water, or low humidity",
+              "supporting_clues": [
+                "Tip burn repeats on otherwise healthy strap-like leaves",
+                "Tap water is used consistently",
+                "Plant has dried too far between waterings or air is very dry"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "What water do you use?",
+            "Do tips brown across many leaves or only older leaves?",
+            "Does the soil dry completely for long periods?"
+          ],
+          "safe_next_steps": [
+            "Check watering consistency and root-zone moisture.",
+            "Where practical, try rainwater or another suitable low-mineral water source if the source water may be contributing.",
+            "Trim only dead tips for appearance; existing brown tissue will not turn green again."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume brown tips prove a nutrient deficiency.",
+            "Do not over-fertilize to correct tip burn."
+          ],
+          "source_ids": [
+            "NC_Spider",
+            "NC_SpiderVariegated"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "spider_scorch_or_rot",
+          "display_title": "Scorched leaves or decline in soggy soil",
+          "symptom_labels": [
+            "pale scorch patches",
+            "yellowing leaves",
+            "soft roots or leaf bases"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Direct-sun scorch",
+              "supporting_clues": [
+                "Bleached/brown patches occur on leaves exposed to strong direct sun"
+              ]
+            },
+            {
+              "cause": "Waterlogging/root rot",
+              "supporting_clues": [
+                "Mix is persistently wet",
+                "Plant declines despite wet soil",
+                "Roots are soft/dark"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is it in strong direct sun?",
+            "Does the pot drain freely?",
+            "Is the root zone still wet several days after watering?"
+          ],
+          "safe_next_steps": [
+            "Use medium or indirect light appropriate to the plant.",
+            "Correct blocked drainage and let soil moisture guide watering."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not solve sun scorch by fertilizing.",
+            "Do not add water to a plant that is already wilted in wet soil."
+          ],
+          "source_ids": [
+            "NC_Spider",
+            "NC_SpiderVariegated"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "zz_plant",
+      "display_name": "ZZ Plant",
+      "scientific_name": "Zamioculcas zamiifolia",
+      "problems": [
+        {
+          "problem_id": "zz_yellow_leaflets",
+          "display_title": "Yellowing leaflets or an entire stalk turning yellow",
+          "symptom_labels": [
+            "yellow leaflets",
+            "yellow stalk",
+            "leaflets dropping"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Overwatering/root stress",
+              "supporting_clues": [
+                "Mix stays wet",
+                "Several leaflets or stalks yellow together",
+                "Base or roots may be soft"
+              ]
+            },
+            {
+              "cause": "Natural ageing of an older leaf",
+              "supporting_clues": [
+                "Only the oldest leaf is gradually yellowing and other growth is healthy"
+              ]
+            },
+            {
+              "cause": "Less commonly, under-watering or nutrient issue",
+              "supporting_clues": [
+                "Mix is very dry for an extended period, or there is a long history without suitable feeding"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the affected stalk one of the oldest?",
+            "Has the mix dried fully since its last watering?",
+            "Are several stalks affected?"
+          ],
+          "safe_next_steps": [
+            "Check the mix before watering; ZZ plants store water and tolerate dry periods.",
+            "If soil stays wet or the stalk base is soft, check drainage and roots.",
+            "Monitor whether new symptoms develop."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not diagnose nutrient deficiency from yellowing alone.",
+            "Do not increase watering solely because a leaflet is yellow."
+          ],
+          "source_ids": [
+            "NC_ZZ",
+            "UF_ZZ",
+            "Ask_ZZ"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": "Yellowing is nonspecific and can also be normal ageing."
+        },
+        {
+          "problem_id": "zz_scale_or_rot",
+          "display_title": "Scale insects or soft/rotting base",
+          "symptom_labels": [
+            "raised brown bumps",
+            "sticky residue",
+            "soft or dark base"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Scale insects",
+              "supporting_clues": [
+                "Fixed raised brown bumps attached to leaves/stems"
+              ]
+            },
+            {
+              "cause": "Root/rhizome rot from persistently wet, poorly aerated mix",
+              "supporting_clues": [
+                "Softened base or roots and a long-lasting wet mix"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Do raised bumps stay attached when gently examined?",
+            "Is the base firm or soft?",
+            "Is the soil compacted or waterlogged?"
+          ],
+          "safe_next_steps": [
+            "Isolate if pests are suspected and inspect nearby plants.",
+            "Correct chronic waterlogging; seek help if the rhizome/base is rotting."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not scrape aggressively or apply a pesticide before confirming scale."
+          ],
+          "source_ids": [
+            "NC_ZZ",
+            "UF_ZZ",
+            "UMD_IndoorDiagnosis"
+          ],
+          "evidence_scope": "plant_specific_plus_general_diagnostic_guidance",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "jade_plant",
+      "display_name": "Jade Plant",
+      "scientific_name": "Crassula ovata",
+      "problems": [
+        {
+          "problem_id": "jade_leaf_fall_soft_leaves",
+          "display_title": "Leaves dropping, soft or yellow leaves",
+          "symptom_labels": [
+            "leaf drop",
+            "yellow leaves",
+            "soft leaves"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Overwatering/root rot",
+              "supporting_clues": [
+                "Mix remains wet",
+                "Leaves drop while soil is damp",
+                "Roots are soft/dark if inspected"
+              ]
+            },
+            {
+              "cause": "Underwatering or root stress",
+              "supporting_clues": [
+                "Mix is very dry and leaves look wrinkled/shriveled"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the mix wet, dry, or somewhere between?",
+            "Are leaves firm, wrinkled, or soft/translucent?",
+            "Does the pot have drainage holes?"
+          ],
+          "safe_next_steps": [
+            "Check moisture and drainage before watering.",
+            "Use a well-drained succulent-appropriate mix and allow it to dry between waterings."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not water just because leaves have fallen; both wet and dry root problems are possible."
+          ],
+          "source_ids": [
+            "NC_Jade"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "jade_visible_pests",
+          "display_title": "Visible sap-feeding pests on stems or leaves",
+          "symptom_labels": [
+            "cottony clusters",
+            "raised scale-like bumps",
+            "fine webbing",
+            "small clusters of insects"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Mealybugs, scale, aphids or spider mites",
+              "supporting_clues": [
+                "Cottony wax, attached bumps, tiny insects, or fine webbing on leaf undersides/stems"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are there cottony clusters, raised bumps, sticky residue, or webbing?",
+            "Are nearby plants affected too?"
+          ],
+          "safe_next_steps": [
+            "Separate the plant while inspecting.",
+            "Check stem joints and leaf undersides; use identification-specific, locally approved control only if pests are confirmed."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not use broad pesticide mixtures without confirming the pest and label suitability."
+          ],
+          "source_ids": [
+            "NC_Jade",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_screening",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "areca_palm",
+      "display_name": "Areca Palm",
+      "scientific_name": "Chrysalidocarpus lutescens",
+      "problems": [
+        {
+          "problem_id": "areca_visible_pests",
+          "display_title": "Speckled, yellowing fronds or visible pests",
+          "symptom_labels": [
+            "fine stippling",
+            "webbing",
+            "small white insects",
+            "raised scale-like bumps"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Spider mites, whiteflies or scale",
+              "supporting_clues": [
+                "Fine webbing/tiny specks on undersides",
+                "Small white insects fly up when foliage is disturbed",
+                "Fixed scale-like bumps on stems or leaves"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Can you see webbing, moving specks, white flying insects or attached bumps?",
+            "Are the undersides more affected?"
+          ],
+          "safe_next_steps": [
+            "Inspect leaf undersides and stems with good light.",
+            "Isolate the plant if pests are plausible and monitor nearby plants.",
+            "Confirm the pest before selecting treatment."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not infer spider mites from yellowing alone."
+          ],
+          "source_ids": [
+            "NC_Areca",
+            "UMD_IndoorDiagnosis",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_clues",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "areca_brown_tips",
+          "display_title": "Brown tips or frond decline",
+          "symptom_labels": [
+            "brown tips",
+            "dry leaflet edges",
+            "yellowing fronds"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Environmental stress or unsuitable indoor humidity/light; watering problems also need checking",
+              "supporting_clues": [
+                "Air is very dry or light/temperature changed recently",
+                "Soil stays either saturated or dry for a long period",
+                "No visible pests but symptoms continue"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Has the plant been moved or exposed to a draft or heat source?",
+            "Is the potting mix wet or dry below the surface?",
+            "Is the indoor air unusually dry?"
+          ],
+          "safe_next_steps": [
+            "Check moisture and drainage, and keep conditions warm and appropriately bright.",
+            "Inspect for pests before assuming the environment is the only cause."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assign a single cause to brown tips without checking water, pests and conditions."
+          ],
+          "source_ids": [
+            "NC_Areca",
+            "UMD_IndoorDiagnosis"
+          ],
+          "evidence_scope": "preliminary_plant_specific_context",
+          "evidence_notes": "The cited plant profile supports humidity and pest susceptibility; tip-browning cause is a differential screen requiring stronger follow-up evidence."
+        }
+      ]
+    },
+    {
+      "plant_id": "peace_lily",
+      "display_name": "Peace Lily",
+      "scientific_name": "Spathiphyllum",
+      "problems": [
+        {
+          "problem_id": "peace_brown_tips",
+          "display_title": "Brown leaf tips or margins",
+          "symptom_labels": [
+            "brown tips",
+            "crispy leaf margins"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Direct sun, underwatering, low humidity or fertilizer-salt buildup",
+              "supporting_clues": [
+                "Plant receives direct sun",
+                "Mix dries excessively",
+                "Air is dry",
+                "Recent or frequent fertilizer use"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Does it receive direct sunlight?",
+            "Is the mix dry or still moist?",
+            "Has fertilizer been applied recently?"
+          ],
+          "safe_next_steps": [
+            "Keep it in suitable shade/indirect light.",
+            "Check moisture before watering and allow excess water to drain.",
+            "If over-fertilization is plausible, pause feeding and review product directions rather than adding more fertilizer."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not diagnose a specific nutrient deficiency from brown tips alone."
+          ],
+          "source_ids": [
+            "NC_PeaceLily"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "peace_wilt_or_yellow",
+          "display_title": "Drooping or yellowing leaves",
+          "symptom_labels": [
+            "wilting",
+            "drooping leaves",
+            "yellow leaves"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Underwatering or water stress",
+              "supporting_clues": [
+                "Mix is dry and the plant has recently wilted"
+              ]
+            },
+            {
+              "cause": "Overwatering/root stress",
+              "supporting_clues": [
+                "Mix remains wet/soggy yet the plant stays wilted"
+              ]
+            },
+            {
+              "cause": "Mealybugs",
+              "supporting_clues": [
+                "Cottony white clusters on leaf undersides or stems"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the soil dry, moist, or wet?",
+            "Does the plant perk up after watering when the soil is dry?",
+            "Can you see cottony insects underneath leaves?"
+          ],
+          "safe_next_steps": [
+            "Use the soil check to decide whether water is needed.",
+            "Ensure excess water drains away.",
+            "Inspect under broad leaves for pests."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not water automatically when a plant wilts in already wet soil."
+          ],
+          "source_ids": [
+            "NC_PeaceLily",
+            "UMD_IndoorDiagnosis",
+            "UMD_Mealybugs"
+          ],
+          "evidence_scope": "plant_specific_plus_general_diagnostic_guidance",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "rose",
+      "display_name": "Rose",
+      "scientific_name": "Rosa",
+      "problems": [
+        {
+          "problem_id": "rose_black_spot",
+          "display_title": "Dark leaf spots with yellowing and leaf drop",
+          "symptom_labels": [
+            "black leaf spots",
+            "yellow tissue around spots",
+            "premature leaf drop"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Possible rose black spot",
+              "supporting_clues": [
+                "Black lesions with feathery/irregular margins",
+                "Yellow tissue around lesions",
+                "Affected leaves drop early"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are spots dark and irregular with yellowing around them?",
+            "Are lower or older leaves affected first?",
+            "Does foliage often stay wet or are plants crowded?"
+          ],
+          "safe_next_steps": [
+            "Remove fallen/infected leaves and badly affected canes where appropriate.",
+            "Improve spacing and airflow; water the soil rather than repeatedly wetting foliage.",
+            "If the problem progresses, seek local plant-diagnostic advice."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not identify black spot from any dark spot alone.",
+            "Do not use fungicide without label directions and confirming local suitability."
+          ],
+          "source_ids": [
+            "TNAU_RoseBlackSpot",
+            "NC_Rose"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": "The symptom pattern closely follows TNAU description; environmental context helps but does not confirm diagnosis."
+        },
+        {
+          "problem_id": "rose_powdery_mildew",
+          "display_title": "White or gray powder on young leaves, shoots or buds",
+          "symptom_labels": [
+            "white/gray powder",
+            "distorted young leaves",
+            "buds fail to open normally"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Possible powdery mildew",
+              "supporting_clues": [
+                "Powdery coating on young leaves/shoots/buds",
+                "Leaves may distort and flower buds may open poorly",
+                "Conditions include mild temperature and humid nights with drier days, per TNAU"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Does the coating look powdery on leaf surfaces or buds?",
+            "Are young leaves distorted?",
+            "Is airflow limited or is the plant shaded?"
+          ],
+          "safe_next_steps": [
+            "Remove heavily affected fallen material.",
+            "Improve airflow and light appropriate for the rose; avoid crowding.",
+            "Ask a local horticultural expert if spread is rapid."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not diagnose mildew from dust or spray residue alone."
+          ],
+          "source_ids": [
+            "TNAU_RosePowdery",
+            "NC_Rose"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "rose_insect_damage",
+          "display_title": "Distorted young growth or visible pests",
+          "symptom_labels": [
+            "visible aphids",
+            "small insects on buds",
+            "stippling or webbing"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Aphids, thrips or mites are plausible; rose pests vary",
+              "supporting_clues": [
+                "Insects clustered on new shoots/buds",
+                "Tiny pests with silvery/bronzed feeding marks",
+                "Fine webbing with stippling"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are insects visible on buds or new shoots?",
+            "Is there webbing or silvery damage?"
+          ],
+          "safe_next_steps": [
+            "Inspect buds, leaf undersides and tender new growth.",
+            "Use non-chemical physical removal where practical and seek pest-specific advice if infestation persists."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume every distorted bud is a pest issue.",
+            "Do not recommend pesticide until pest identification is more confident."
+          ],
+          "source_ids": [
+            "NC_Rose",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_screening",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "hibiscus",
+      "display_name": "Hibiscus",
+      "scientific_name": "Hibiscus rosa-sinensis",
+      "problems": [
+        {
+          "problem_id": "hibiscus_bud_leaf_drop",
+          "display_title": "Buds or leaves drop after a move or environmental change",
+          "symptom_labels": [
+            "bud drop",
+            "leaf drop",
+            "sudden decline after moving"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Environmental change or stress following relocation",
+              "supporting_clues": [
+                "Plant was recently moved",
+                "Light, temperature, watering or wind exposure changed"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Was the plant moved or repotted recently?",
+            "Did light exposure or temperature change?",
+            "Are pests or leaf spots also visible?"
+          ],
+          "safe_next_steps": [
+            "Keep conditions consistent while checking moisture and pest clues.",
+            "Avoid repeatedly moving the plant as a first response.",
+            "Monitor new growth before making several changes at once."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume every dropped bud indicates a fertilizer deficiency."
+          ],
+          "source_ids": [
+            "NC_Hibiscus"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "hibiscus_scale",
+          "display_title": "Raised bumps or sticky residues on leaves/stems",
+          "symptom_labels": [
+            "raised brown bumps",
+            "sticky leaves",
+            "yellowing leaves"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Scale insects are a possible cause",
+              "supporting_clues": [
+                "Fixed raised bumps on stems or leaf veins",
+                "Honeydew/sticky residue or yellowing around infested areas"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are the bumps attached and difficult to dislodge?",
+            "Is there sticky residue or black sooty growth?",
+            "Are nearby plants affected?"
+          ],
+          "safe_next_steps": [
+            "Inspect stems and leaf undersides; isolate the plant if scale is suspected.",
+            "Confirm the pest and then choose a treatment suitable for hibiscus and the growing environment."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not scrape or spray aggressively without confirming the pest."
+          ],
+          "source_ids": [
+            "NC_Hibiscus",
+            "UMD_IndoorInsects",
+            "UMD_IndoorDiagnosis"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_clues",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "marigold",
+      "display_name": "Marigold (African Marigold)",
+      "scientific_name": "Tagetes erecta",
+      "problems": [
+        {
+          "problem_id": "marigold_wilt_stem_rot",
+          "display_title": "Wilting or stem/root decline in wet soil",
+          "symptom_labels": [
+            "wilting",
+            "dark or soft stem base",
+            "plant collapse"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Water stagnation, root/stem rot or wilt disease is possible",
+              "supporting_clues": [
+                "Soil stays waterlogged",
+                "Stem base is soft/dark",
+                "Several plants decline under similar wet conditions"
+              ]
+            },
+            {
+              "cause": "Dry soil or heat stress",
+              "supporting_clues": [
+                "Root zone is dry after hot weather",
+                "Leaves recover after appropriate watering"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the soil actually wet or dry?",
+            "Does the pot/bed drain?",
+            "Is the stem base firm or soft?"
+          ],
+          "safe_next_steps": [
+            "Avoid standing water and correct drainage.",
+            "Remove collapsed plant material and inspect neighbouring plants.",
+            "If wilt spreads despite correcting moisture, get plant-diagnostic help."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not prescribe more water solely because the plant wilts.",
+            "Do not treat a wilt disease as confirmed without evidence."
+          ],
+          "source_ids": [
+            "TNAU_Marigold",
+            "NC_Marigold"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "marigold_leaf_disease",
+          "display_title": "Leaf spots, powdery coating or flower blight",
+          "symptom_labels": [
+            "leaf spots",
+            "white powder",
+            "brown flower/leaf patches"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Possible leaf spot, powdery mildew or botrytis-type disease",
+              "supporting_clues": [
+                "Distinct expanding spots or powdery growth",
+                "Affected leaves/flowers deteriorate over time"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are the lesions discrete spots or a powdery film?",
+            "Do affected areas spread after wet weather?",
+            "Are plants crowded with poor airflow?"
+          ],
+          "safe_next_steps": [
+            "Remove fallen/dying material and improve airflow.",
+            "Water the growing medium rather than frequently wetting foliage.",
+            "Seek local diagnosis if the problem spreads quickly."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not call all spots fungal; insects and environmental injury can look similar."
+          ],
+          "source_ids": [
+            "TNAU_Marigold",
+            "NC_Marigold"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "marigold_pest_damage",
+          "display_title": "Distorted young leaves or sticky/curling shoots",
+          "symptom_labels": [
+            "rolled or distorted leaves",
+            "sticky residue",
+            "visible small insects",
+            "silvered/papery leaf tissue"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Mealybugs or thrips are possible",
+              "supporting_clues": [
+                "White cottony insects and honeydew/sooty growth",
+                "Distorted tender tissue or papery feeding damage"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are white cottony insects visible on young shoots?",
+            "Is growth distorted, rolled or papery?",
+            "Are there tiny insects inside flowers or buds?"
+          ],
+          "safe_next_steps": [
+            "Inspect new growth and flower heads.",
+            "Remove a small number of visible pests by hand where practical and monitor.",
+            "Confirm the pest before using a control product."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not copy field-crop pesticide rates into a household-pot recommendation."
+          ],
+          "source_ids": [
+            "TNAU_Marigold",
+            "NC_Marigold",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_IPM",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "curry_leaf",
+      "display_name": "Curry Leaf Plant",
+      "scientific_name": "Murraya koenigii",
+      "problems": [
+        {
+          "problem_id": "curry_leaf_chewing_damage",
+          "display_title": "Chewed or skeletonized leaves",
+          "symptom_labels": [
+            "chewed leaf edges",
+            "holes in leaves",
+            "visible beetle/larva"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Leaf-feeding insects, including a reported curry-leaf tortoise beetle, may be involved",
+              "supporting_clues": [
+                "Fresh chewing damage",
+                "Visible beetles or larvae on affected leaves"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Can you see beetles or larvae on the damaged leaves?",
+            "Is damage fresh and increasing?",
+            "Are only some leaves affected or is the whole plant declining?"
+          ],
+          "safe_next_steps": [
+            "Inspect leaves, including the undersides, and manually remove visible pests on a small plant when practical.",
+            "Photograph the insect and damage for identification before selecting a treatment."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume all leaf holes are the tortoise beetle; the cited Indian report documents an outbreak, not universal prevalence."
+          ],
+          "source_ids": [
+            "ICAR_CurryBeetle",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_but_limited",
+          "evidence_notes": "The Indian journal record supports the pest as a possibility; do not extrapolate outbreak prevalence."
+        },
+        {
+          "problem_id": "curry_leaf_wilt_water_stress",
+          "display_title": "Drooping/pale leaves or shoot dieback",
+          "symptom_labels": [
+            "drooping leaves",
+            "pale foliage",
+            "drying shoot tips",
+            "darkening stem"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Watering/root stress is a possibility, especially when decline follows frequent watering or repotting",
+              "supporting_clues": [
+                "Soil is wet for long periods",
+                "Symptoms began after transplanting or frequent daily watering"
+              ]
+            },
+            {
+              "cause": "Dry-root or heat stress also needs checking",
+              "supporting_clues": [
+                "Soil is dry and pot is exposed to hot sun/wind"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is the mix wet or dry below the surface?",
+            "Was the plant recently transplanted or pruned heavily?",
+            "Does the pot drain freely?"
+          ],
+          "safe_next_steps": [
+            "Check moisture and drainage before changing watering frequency.",
+            "Avoid keeping roots in standing water; observe new growth after changing one factor at a time.",
+            "Ask a knowledgeable local nursery/extension service if stem dieback progresses."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not use a fixed daily watering schedule.",
+            "Do not state root rot is confirmed from drooping alone."
+          ],
+          "source_ids": [
+            "Ask_Curry",
+            "UMN_Lighting"
+          ],
+          "evidence_scope": "preliminary_case_based",
+          "evidence_notes": "The curry-leaf case source is anecdotal and its responder explicitly framed overwatering as a possibility; further India-specific diagnostic sourcing is needed."
+        }
+      ]
+    },
+    {
+      "plant_id": "lucky_bamboo",
+      "display_name": "Lucky Bamboo",
+      "scientific_name": "Dracaena sanderiana",
+      "problems": [
+        {
+          "problem_id": "lucky_bamboo_yellow_stem",
+          "display_title": "Yellow leaves or yellow/soft stem",
+          "symptom_labels": [
+            "yellow leaves",
+            "yellowing cane/stem",
+            "soft or rotting stem"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Excess moisture/water quality/root stress",
+              "supporting_clues": [
+                "Soil is waterlogged or roots remain stagnant",
+                "Stem is soft or rotting",
+                "Water-grown setup is not refreshed regularly"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Is it grown in soil or water?",
+            "If in water, when was it last changed?",
+            "Is the yellow section firm or soft?"
+          ],
+          "safe_next_steps": [
+            "For water culture, refresh water regularly and inspect roots/container.",
+            "For soil culture, check moisture and make sure excess water drains.",
+            "Remove a badly rotting cutting only if healthy material remains and follow propagation guidance."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not treat soil-grown and water-grown plants as having identical care needs.",
+            "Do not assume every yellow leaf proves disease."
+          ],
+          "source_ids": [
+            "NC_LuckyBamboo"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "lucky_bamboo_brown_tips_pests",
+          "display_title": "Brown tips or visible pests",
+          "symptom_labels": [
+            "brown leaf tips",
+            "cottony clusters",
+            "fine webbing",
+            "raised scale bumps"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Low humidity or moisture/environmental stress",
+              "supporting_clues": [
+                "Tip browning without visible insects"
+              ]
+            },
+            {
+              "cause": "Mealybugs, mites or scale",
+              "supporting_clues": [
+                "Cottony material, webbing or fixed raised bumps"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are pests or webbing visible?",
+            "Is the plant grown indoors near dry airflow?",
+            "Is water culture refreshed regularly?"
+          ],
+          "safe_next_steps": [
+            "Inspect leaves/stems and clean the container if grown in water.",
+            "Check its growing setup and avoid sudden harsh sun.",
+            "Identify any pest before treatment."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not infer low humidity if pest evidence is present."
+          ],
+          "source_ids": [
+            "NC_LuckyBamboo",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_clues",
+          "evidence_notes": ""
+        }
+      ]
+    },
+    {
+      "plant_id": "rubber_plant",
+      "display_name": "Rubber Plant",
+      "scientific_name": "Ficus elastica",
+      "problems": [
+        {
+          "problem_id": "rubber_leaf_drop",
+          "display_title": "Yellowing or dropping leaves",
+          "symptom_labels": [
+            "yellow lower leaves",
+            "leaf drop",
+            "sudden leaf drop"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Overwatering, cold draft/temperature drop or environmental stress",
+              "supporting_clues": [
+                "Several leaves drop after a cold draft or move",
+                "Soil remains wet",
+                "Symptoms follow a sudden temperature change"
+              ]
+            },
+            {
+              "cause": "Normal ageing of some lower leaves",
+              "supporting_clues": [
+                "Only occasional bottom leaves yellow and drop while upper growth remains healthy"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Are mainly the oldest bottom leaves affected?",
+            "Was there a recent move, draft or temperature change?",
+            "Is the mix wet or dry?"
+          ],
+          "safe_next_steps": [
+            "Review light, temperature and moisture together.",
+            "Keep its location stable and protect it from cold drafts.",
+            "Check whether the pattern spreads to new growth."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not interpret one old lower leaf dropping as a confirmed disease.",
+            "Do not automatically increase watering after leaf drop."
+          ],
+          "source_ids": [
+            "NC_Rubber"
+          ],
+          "evidence_scope": "plant_specific",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "rubber_visible_pests",
+          "display_title": "Sticky leaves, cottony clusters or webbing",
+          "symptom_labels": [
+            "cottony white masses",
+            "raised scale-like bumps",
+            "fine webbing",
+            "yellow stippling"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Mealybugs, scale or spider mites",
+              "supporting_clues": [
+                "Cottony wax on leaf joints/undersides",
+                "Fixed bumps on stems/leaves",
+                "Fine webbing and stippling"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Can you see cottony material, bumps or webbing?",
+            "Are leaf undersides affected?",
+            "Are nearby plants showing similar signs?"
+          ],
+          "safe_next_steps": [
+            "Isolate and inspect the plant carefully.",
+            "Wipe dust from leaves and confirm pest identity before choosing treatment."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not apply unverified DIY sprays that can damage leaves."
+          ],
+          "source_ids": [
+            "NC_Rubber",
+            "UMD_Mealybugs",
+            "UMD_IndoorInsects"
+          ],
+          "evidence_scope": "plant_specific_plus_general_pest_screening",
+          "evidence_notes": ""
+        },
+        {
+          "problem_id": "rubber_scorch_or_cold_damage",
+          "display_title": "Brown patches or sudden leaf damage",
+          "symptom_labels": [
+            "brown patches",
+            "scorched edges",
+            "damage after temperature/light shift"
+          ],
+          "possible_causes": [
+            {
+              "cause": "Harsh direct afternoon sun, cold drafts or abrupt environment change",
+              "supporting_clues": [
+                "Damage appears after moving into stronger sun or exposure to cold air"
+              ]
+            }
+          ],
+          "follow_up_questions": [
+            "Was the plant moved or exposed to direct afternoon sun?",
+            "Was it near an air conditioner, open window or cold draft?"
+          ],
+          "safe_next_steps": [
+            "Use bright indirect light/partial shade and keep temperatures stable.",
+            "Acclimate gradually when changing light exposure."
+          ],
+          "avoid_recommending_without_more_evidence": [
+            "Do not assume brown patches are a contagious disease without other clues."
+          ],
+          "source_ids": [
+            "NC_Rubber",
+            "UMN_Spring"
+          ],
+          "evidence_scope": "plant_specific_plus_general_transition_guidance",
+          "evidence_notes": ""
+        }
+      ]
+    }
+  ]
+}
