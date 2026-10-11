@@ -253,16 +253,16 @@ PotWise is intended for deployment with Streamlit Community Cloud. Configure the
 ## Screenshots
 
 ### PotWise Home
-![PotWise Home](screenshots/Screenshot 2026-10-12 001416.png‎)
+![PotWise Home](screenshots/potwise-home.png)
 
 ### PlantWise Identification
-![PlantWise Assistant](screenshots/Screenshot 2026-10-12 001831.png)
+![PlantWise Identification](screenshots/plantwise-identification.png)
 
-### PlantWise Assitant
-![PlantWise Assistant](screenshots/Screenshot 2026-10-12 001941.png)
+### PlantWise Assistant
+![PlantWise Assistant](screenshots/plantwise-assistant.png)
 
-### User Query - text to speech
-![PlantWise Assistant](screenshots/Screenshot 2026-10-12 002025.png)
+### User Query — Text to Speech
+![Text to Speech](screenshots/text-to-speech.png)
 
 
 ## Author
