@@ -252,11 +252,18 @@ PotWise is intended for deployment with Streamlit Community Cloud. Configure the
 
 ## Screenshots
 
-> Screenshot placeholder — add a landing-page screenshot here.
+### PotWise Home
+![PotWise Home](screenshots/Screenshot 2026-10-12 001416.png‎)
 
-> Screenshot placeholder — add a PlantWise Assistant/chat screenshot here.
+### PlantWise Identification
+![PlantWise Assistant](screenshots/Screenshot 2026-10-12 001831.png)
 
-> Screenshot placeholder — add a My Pots or voice-mode screenshot here.
+### PlantWise Assitant
+![PlantWise Assistant](screenshots/Screenshot 2026-10-12 001941.png)
+
+### User Query - text to speech
+![PlantWise Assistant](screenshots/Screenshot 2026-10-12 002025.png)
+
 
 ## Author
 
