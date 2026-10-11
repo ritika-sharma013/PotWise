@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light; }
+    html, body { height: 82px; margin: 0; overflow: hidden; }
+    body { color: #25432b; font-family: sans-serif; }
+    .recorder { align-items: center; display: flex; gap: 0.6rem; height: 82px; white-space: nowrap; }
+    button { background: #eef8ef; border: 1px solid #73a77b; border-radius: 0.5rem; color: #25432b; cursor: pointer; padding: 0.5rem 0.75rem; }
+    button:disabled { cursor: default; opacity: 0.55; }
+    .status { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; }
+    .error { color: #a33; }
+  </style>
+</head>
+<body>
+  <div class="recorder">
+    <button id="start" type="button">🎙️ Start recording</button>
+    <button id="stop" type="button" disabled>Stop</button>
+    <span id="status" class="status">Ready</span>
+  </div>
+  <script>
+    const FRAME_HEIGHT = 82;
+    const startButton = document.getElementById("start");
+    const stopButton = document.getElementById("stop");
+    const statusElement = document.getElementById("status");
+    let stream = null;
+    let recorder = null;
+    let audioContext = null;
+    let analyser = null;
+    let animationFrame = null;
+    let silenceTimer = null;
+    let maxTimer = null;
+    let speechDetected = false;
+    let chunks = [];
+    let recordingNumber = 0;
+    let finishing = false;
+
+    function setFrameHeight() {
+      window.parent.postMessage({
+        isStreamlitMessage: true,
+        type: "streamlit:setFrameHeight",
+        height: FRAME_HEIGHT,
+      }, "*");
+    }
+
+    function setStatus(text, isError = false) {
+      statusElement.textContent = text;
+      statusElement.className = isError ? "status error" : "status";
+      setFrameHeight();
+    }
+
+    function clearTimers() {
+      if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+      if (silenceTimer !== null) clearTimeout(silenceTimer);
+      if (maxTimer !== null) clearTimeout(maxTimer);
+      animationFrame = null;
+      silenceTimer = null;
+      maxTimer = null;
+    }
+
+    function releaseResources() {
+      clearTimers();
+      if (audioContext) {
+        audioContext.close().catch(() => {});
+        audioContext = null;
+      }
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        stream = null;
+      }
+      analyser = null;
+      recorder = null;
+      finishing = false;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    }
+
+    function postRecording(blob, id) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = String(reader.result || "");
+        const comma = dataUrl.indexOf(",");
+        const audioBase64 = comma >= 0 ? dataUrl.slice(comma + 1) : "";
+        if (!audioBase64) {
+          setStatus("The recording was empty. Please try again.", true);
+          return;
+        }
+        window.parent.postMessage({
+          isStreamlitMessage: true,
+          type: "streamlit:setComponentValue",
+          value: {
+            status: "complete",
+            recording_id: id,
+            audio_base64: audioBase64,
+            mime_type: blob.type || "audio/webm",
+          },
+        }, "*");
+      };
+      reader.readAsDataURL(blob);
+    }
+
+    function finishRecording() {
+      if (!recorder || recorder.state !== "recording" || finishing) return;
+      finishing = true;
+      setStatus("Finishing recording...");
+      recorder.stop();
+    }
+
+    function monitorAudio() {
+      if (!analyser || !recorder || recorder.state !== "recording" || finishing) return;
+      const samples = new Uint8Array(analyser.fftSize);
+      analyser.getByteTimeDomainData(samples);
+      let sum = 0;
+      for (const sample of samples) {
+        const normalized = (sample - 128) / 128;
+        sum += normalized * normalized;
+      }
+      const rms = Math.sqrt(sum / samples.length);
+      if (rms > 0.025) {
+        if (!speechDetected) setStatus("Speech detected");
+        speechDetected = true;
+        if (silenceTimer !== null) clearTimeout(silenceTimer);
+        silenceTimer = null;
+      } else if (speechDetected && silenceTimer === null) {
+        silenceTimer = setTimeout(finishRecording, 1800);
+      }
+      animationFrame = requestAnimationFrame(monitorAudio);
+    }
+
+    async function startRecording() {
+      if (recorder && recorder.state === "recording") return;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const preferredType = "audio/webm;codecs=opus";
+        const mimeType = MediaRecorder.isTypeSupported(preferredType) ? preferredType : "audio/webm";
+        recorder = new MediaRecorder(stream, { mimeType });
+        chunks = [];
+        speechDetected = false;
+        finishing = false;
+        recordingNumber += 1;
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) chunks.push(event.data);
+        };
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: recorder.mimeType || mimeType });
+          const recordingId = String(recordingNumber);
+          releaseResources();
+          if (speechDetected && blob.size > 0) {
+            postRecording(blob, recordingId);
+          } else {
+            setStatus("No speech detected. Please try again.", true);
+          }
+        };
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        source.connect(analyser);
+        recorder.start(250);
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        setStatus("Listening...");
+        monitorAudio();
+        maxTimer = setTimeout(finishRecording, 60000);
+      } catch (error) {
+        releaseResources();
+        setStatus("Microphone permission was denied or unavailable.", true);
+      }
+    }
+
+    startButton.addEventListener("click", startRecording);
+    stopButton.addEventListener("click", finishRecording);
+    window.addEventListener("beforeunload", releaseResources);
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "streamlit:render") setFrameHeight();
+    });
+    window.parent.postMessage({
+      isStreamlitMessage: true,
+      type: "streamlit:componentReady",
+      apiVersion: 1,
+    }, "*");
+    setFrameHeight();
+  </script>
+</body>
+</html>

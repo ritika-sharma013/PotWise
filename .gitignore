@@ -221,4 +221,3 @@ __marimo__/
 
 # PotWise runtime database
 database/*.sqlite3
-data/potwise.db

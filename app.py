@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import hashlib
+import base64
 import sqlite3
+from contextlib import nullcontext
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from core.identify import (
     IdentificationError,
@@ -18,28 +21,516 @@ from core.assistant import AssistantResponseError, chat_with_gemma
 from core.problem_data import ProblemDataError, get_problems_for_plant, load_problem_data
 from core.soil import calculate_soil_mix
 from core.voice import get_last_voice_error, speech_to_text, text_to_speech
+from core.mic_recorder import record_microphone
+from core.chat_history import (
+    create_conversation,
+    delete_conversation,
+    get_conversation,
+    get_conversation_messages,
+    list_recent_conversations,
+    rename_conversation,
+    save_message,
+    update_conversation,
+)
 from core.pots import (
     delete_pot,
-    get_or_create_conversation,
     list_saved_pots,
-    load_conversation_messages,
-    save_conversation_message,
     save_pot,
 )
 
 
 def main() -> None:
     st.set_page_config(page_title="PotWise", page_icon="🌿", layout="centered")
-    st.title("🌿 PotWise")
-    st.write("Offline-first plant identification and care companion.")
+    st.markdown(
+        """
+        <style>
+        :root {
+            --pw-background: #F3EBDD;
+            --pw-sidebar: #EAE0CC;
+            --pw-surface: #DCE5D5;
+            --pw-card: #FFFDF7;
+            --pw-border: #D6CCB8;
+            --pw-primary: #123F2A;
+            --pw-green: #0B5A3C;
+            --pw-green-hover: #2F7654;
+            --pw-sage: #A8B89A;
+            --pw-beige: #E6D8BE;
+            --pw-cream: #FFFDF7;
+            --pw-text: #2F4A3A;
+            --pw-muted: #5F6B61;
+        }
 
+        /* =====================================================
+           POTWISE UI / UX THEME
+           ===================================================== */
+
+        .stApp,
+        [data-testid="stAppViewContainer"] {
+            background: var(--pw-background);
+            color: var(--pw-text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+        }
+
+        html,
+        body {
+            background: var(--pw-background);
+        }
+
+        [data-testid="stMainBlockContainer"] {
+            max-width: 760px;
+            padding-top: 2.25rem;
+            padding-bottom: 3.25rem;
+        }
+
+        [data-testid="stHeader"] {
+            background: transparent;
+        }
+
+        [data-testid="stSidebar"] {
+            background: var(--pw-sidebar);
+            border-right: 1px solid var(--pw-border);
+        }
+
+        [data-testid="stSidebarContent"] {
+            padding: 1.65rem 1.1rem;
+        }
+
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3,
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+            color: var(--pw-primary);
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button {
+            background: transparent;
+            color: var(--pw-primary);
+            border-color: transparent;
+            text-align: left;
+            min-height: 2.3rem;
+            padding: 0.45rem 0.6rem;
+            font-size: 0.92rem;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] {
+            margin-bottom: 0.2rem;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:hover {
+            background: var(--pw-sage);
+            color: var(--pw-primary);
+            border-color: var(--pw-sage);
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[kind="primary"] {
+            background: var(--pw-green);
+            color: var(--pw-cream);
+            border-color: var(--pw-green);
+            text-align: center;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[kind="primary"]:hover {
+            background: var(--pw-green-hover);
+            color: var(--pw-cream);
+            border-color: var(--pw-green-hover);
+        }
+
+        h1, h2, h3, h4, h5, h6,
+        [data-testid="stMarkdownContainer"] p,
+        label {
+            color: var(--pw-primary);
+        }
+
+        h1, h2, h3 {
+            letter-spacing: -0.02em;
+        }
+
+        [data-testid="stMarkdownContainer"] p {
+            color: var(--pw-text);
+        }
+
+        [data-testid="stAppViewContainer"] h2 {
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        [data-testid="stCaptionContainer"] {
+            color: var(--pw-muted);
+        }
+
+        [data-testid="stFileUploader"] label,
+        [data-testid="stFileUploader"] small,
+        [data-testid="stFileUploaderDropzone"] span {
+            color: var(--pw-primary);
+        }
+
+        .pw-hero {
+            margin-bottom: 1.9rem;
+            padding-top: 0.15rem;
+        }
+
+        .pw-hero-title {
+            margin: 0;
+            color: var(--pw-primary);
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+        }
+
+        .pw-hero-subtitle {
+            margin: 0.6rem 0 0;
+            color: var(--pw-primary);
+            font-size: 0.98rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        a {
+            color: var(--pw-green);
+        }
+
+        [data-testid="stButton"] > button,
+        [data-testid="stFormSubmitButton"] > button {
+            background: var(--pw-green);
+            color: var(--pw-cream) !important;
+            border: 1px solid var(--pw-green);
+            border-radius: 0.45rem;
+            box-shadow: none;
+        }
+
+        [data-testid="stButton"] > button p,
+        [data-testid="stButton"] > button span,
+        [data-testid="stFormSubmitButton"] > button p,
+        [data-testid="stFormSubmitButton"] > button span {
+            color: var(--pw-cream) !important;
+            font-weight: 600;
+        }
+
+        [data-testid="stButton"] > button[kind="primary"],
+        [data-testid="stFormSubmitButton"] > button[kind="primary"] {
+            background: var(--pw-green);
+            color: var(--pw-cream);
+            border: 1px solid var(--pw-green);
+        }
+
+        [data-testid="stButton"] > button:hover,
+        [data-testid="stFormSubmitButton"] > button:hover {
+            background: var(--pw-green-hover);
+            border-color: var(--pw-green-hover);
+            color: var(--pw-cream);
+        }
+
+        [data-testid="stButton"] > button:focus-visible,
+        [data-testid="stFormSubmitButton"] > button:focus-visible {
+            outline: 2px solid var(--pw-sage);
+            outline-offset: 2px;
+            box-shadow: none;
+        }
+
+        [data-testid="stButton"] > button[kind="primary"]:hover,
+        [data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
+            background: var(--pw-green-hover);
+            border-color: var(--pw-green-hover);
+            color: var(--pw-cream);
+        }
+
+        [data-testid="stFileUploader"] {
+            background: var(--pw-cream);
+            border: 1px solid var(--pw-border);
+            border-radius: 0.65rem;
+            padding: 0.7rem;
+            margin-bottom: 1rem;
+        }
+
+        [data-testid="stFileUploader"] > section {
+            background: transparent;
+        }
+
+        [data-testid="stFileUploaderDropzone"] {
+            background: transparent;
+            border: 0;
+            color: var(--pw-primary);
+        }
+
+        [data-testid="stFileUploaderDropzone"] button {
+            background: var(--pw-green);
+            border-color: var(--pw-green);
+            color: var(--pw-cream) !important;
+            font-weight: 600;
+        }
+
+        [data-testid="stFileUploaderDropzone"] button * {
+            color: var(--pw-cream) !important;
+        }
+
+        [data-testid="stTextInput"] input,
+        [data-testid="stTextArea"] textarea,
+        [data-testid="stNumberInput"] input,
+        [data-baseweb="select"] > div {
+            background: var(--pw-cream);
+            color: var(--pw-text);
+            border-color: var(--pw-border);
+            border-radius: 0.45rem;
+            font-size: 0.95rem;
+        }
+
+        [data-testid="stTextInput"] input:focus,
+        [data-testid="stTextArea"] textarea:focus,
+        [data-testid="stNumberInput"] input:focus {
+            border-color: var(--pw-green);
+            box-shadow: 0 0 0 1px var(--pw-green);
+        }
+
+        [data-testid="stTextInput"] input::placeholder,
+        [data-testid="stTextArea"] textarea::placeholder,
+        [data-testid="stNumberInput"] input::placeholder {
+            color: var(--pw-muted);
+            opacity: 1;
+        }
+
+        [data-testid="stAlert"] {
+            background: #DCE5D5;
+            border: 1px solid var(--pw-sage);
+            border-radius: 0.55rem;
+            color: var(--pw-text);
+        }
+
+        [data-testid="stAlert"] p,
+        [data-testid="stAlert"] svg {
+            color: var(--pw-primary);
+            fill: var(--pw-primary);
+        }
+
+        [data-testid="stAlert"] p {
+            font-weight: 500;
+        }
+
+        [data-testid="stExpander"] {
+            background: var(--pw-card);
+            border: 1px solid var(--pw-border);
+            border-radius: 0.55rem;
+        }
+
+        [data-testid="stExpander"] summary,
+        [data-testid="stExpander"] summary p {
+            color: var(--pw-primary);
+        }
+
+        [data-baseweb="popover"],
+        [data-baseweb="menu"],
+        [role="listbox"],
+        [role="option"] {
+            background: var(--pw-cream);
+            color: var(--pw-primary);
+        }
+
+        [role="option"]:hover,
+        [role="option"][aria-selected="true"] {
+            background: var(--pw-sage);
+            color: var(--pw-primary);
+        }
+
+        [data-testid="stSpinner"] {
+            color: var(--pw-green);
+        }
+
+        [data-testid="stChatMessage"] p {
+            color: var(--pw-text);
+        }
+
+        [data-testid="stSpinner"] p {
+            color: var(--pw-primary);
+            font-weight: 600;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:not([kind="primary"]) {
+            background: transparent !important;
+            color: var(--pw-primary) !important;
+            border-color: transparent !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:not([kind="primary"]) p,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:not([kind="primary"]) span {
+            color: var(--pw-primary) !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[kind="primary"],
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[kind="primary"] p,
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[kind="primary"] span {
+            background: var(--pw-green) !important;
+            color: var(--pw-cream) !important;
+            border-color: var(--pw-green) !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button:not([kind="primary"]):hover {
+            background: var(--pw-sage) !important;
+            color: var(--pw-primary) !important;
+            border-color: var(--pw-sage) !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[kind="primary"]:hover {
+            background: var(--pw-green-hover) !important;
+            color: var(--pw-cream) !important;
+            border-color: var(--pw-green-hover) !important;
+        }
+
+        [data-testid="stSidebar"] [data-testid="stButton"] > button[aria-pressed="true"] {
+            background: var(--pw-sage) !important;
+            color: var(--pw-primary) !important;
+            border: 1px solid var(--pw-green) !important;
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-plantwise-chat-"] {
+            border: 1px solid var(--pw-green);
+            border-radius: 0.5rem;
+            padding: 0.15rem 0.25rem;
+        }
+
+        /* Keep Streamlit's collapse-button hover styling intact. */
+        [data-testid="stSidebarCollapseButton"]:not(:hover),
+        [data-testid="stSidebarCollapseButton"] button:not(:hover),
+        button[data-testid="stSidebarCollapseButton"]:not(:hover),
+        button[aria-label="Close sidebar"]:not(:hover),
+        button[aria-label="Open sidebar"]:not(:hover) {
+            background: var(--pw-green) !important;
+            color: var(--pw-cream) !important;
+            border: 1px solid var(--pw-green) !important;
+            border-radius: 0.45rem;
+        }
+
+        [data-testid="stSidebarCollapseButton"]:not(:hover) svg,
+        [data-testid="stSidebarCollapseButton"] button:not(:hover) svg,
+        button[data-testid="stSidebarCollapseButton"]:not(:hover) svg,
+        button[aria-label="Close sidebar"]:not(:hover) svg,
+        button[aria-label="Open sidebar"]:not(:hover) svg {
+            color: var(--pw-cream) !important;
+            fill: var(--pw-cream) !important;
+            stroke: var(--pw-cream) !important;
+        }
+
+        [data-testid="stChatMessage"] {
+            background: var(--pw-card);
+            border: 1px solid var(--pw-border);
+            border-radius: 0.55rem;
+            padding: 0.9rem 1rem;
+            margin-bottom: 0.55rem;
+        }
+
+        [data-testid="stChatMessage"][data-message-author-role="user"] {
+            background: var(--pw-green);
+            border-color: var(--pw-green);
+        }
+
+        [data-testid="stChatMessage"][data-message-author-role="user"] p {
+            color: var(--pw-cream);
+        }
+
+        [data-testid="stChatMessage"][data-message-author-role="assistant"] {
+            border-left: 3px solid var(--pw-green);
+        }
+
+        [data-testid="stTextArea"] textarea {
+            line-height: 1.5;
+        }
+
+        [data-testid="stRadio"] label,
+        [data-testid="stToggle"] label,
+        [data-testid="stNumberInput"] label,
+        [data-testid="stSelectbox"] label {
+            color: var(--pw-primary);
+            font-weight: 600;
+        }
+
+        [data-testid="stRadio"] [role="radio"][aria-checked="true"] {
+            background: var(--pw-green);
+            border-color: var(--pw-green);
+        }
+
+        [data-testid="stToggle"] [data-checked="true"] {
+            background: var(--pw-green);
+        }
+
+        [data-testid="stFileUploader"],
+        [data-testid="stAlert"],
+        [data-testid="stExpander"],
+        [data-testid="stChatMessage"] {
+            border-color: rgba(11, 90, 60, 0.28);
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-my-pot-"] {
+            margin: 0.35rem 0;
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-my-pot-"] [data-testid="stCaptionContainer"] {
+            color: var(--pw-muted);
+            font-size: 0.78rem;
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-my-pot-delete-"] [data-testid="stButton"],
+        [data-testid="stSidebar"] [class*="st-key-my-pot-delete-"] [data-testid="stButton"] > button {
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
+            height: 36px !important;
+            min-height: 36px !important;
+            max-height: 36px !important;
+            flex: 0 0 36px !important;
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-my-pot-delete-"] [data-testid="stButton"] > button {
+            padding: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-my-pot-delete-"] [data-testid="stButton"] > button:not(:hover) {
+            background: var(--pw-green) !important;
+            color: var(--pw-cream) !important;
+            border-color: var(--pw-green) !important;
+        }
+
+        [data-testid="stSidebar"] [class*="st-key-my-pot-delete-"] [data-testid="stButton"] > button:not(:hover) p,
+        [data-testid="stSidebar"] [class*="st-key-my-pot-delete-"] [data-testid="stButton"] > button:not(:hover) span {
+            color: var(--pw-cream) !important;
+            margin: 0;
+            font-size: 1.05rem !important;
+            line-height: 1;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+        <div class="pw-hero">
+            <div class="pw-hero-title">🌿&nbsp; PotWise</div>
+            <div class="pw-hero-subtitle">Not sure what your plant needs? Just ask PotWise.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    _render_recent_chats()
     st.header("Identify a plant")
+    upload_widget_key = st.session_state.setdefault(
+        "plant_upload_widget_key",
+        "plant_upload_initial",
+    )
     uploaded_image = st.file_uploader(
         "Upload a plant photo",
         type=["jpg", "jpeg", "png", "webp"],
         help="The image is sent only to your local Ollama instance.",
+        key=upload_widget_key,
     )
     if uploaded_image is None:
+        if st.session_state.get("open_history_conversation"):
+            _render_open_conversation()
+            return
         st.info("Upload a photo to begin.")
         return
 
@@ -47,12 +538,37 @@ def main() -> None:
     st.image(image_bytes, caption=uploaded_image.name, use_container_width=True)
     image_signature = hashlib.sha256(image_bytes).hexdigest()
     if st.session_state.get("identification_image_signature") != image_signature:
+        current_id = st.session_state.get("current_conversation_id")
+        current_conversation = None
+        if (
+            isinstance(current_id, str)
+            and st.session_state.get("identification_image_signature") is None
+        ):
+            try:
+                current_conversation = get_conversation(current_id)
+            except sqlite3.Error:
+                st.error("Could not load the current chat right now.")
+                return
+
+        is_blank_current_conversation = bool(
+            isinstance(current_conversation, dict)
+            and not current_conversation.get("plant_id")
+            and not current_conversation.get("plant_name")
+        )
+        if not is_blank_current_conversation:
+            try:
+                st.session_state.current_conversation_id = create_conversation()
+            except sqlite3.Error:
+                st.error("Could not create a new chat right now.")
+                return
+        st.session_state.open_history_conversation = False
         st.session_state.identification_image_signature = image_signature
         st.session_state.pop("identification", None)
         st.session_state.pop("manual_selection_requested", None)
         st.session_state.pop("confirmed_plant_id", None)
         st.session_state.pop("confirmed_plant_name", None)
         st.session_state.pop("confirmed_plant", None)
+        st.session_state.pop("plant_confirmed", None)
         st.session_state.pop("assistant_messages", None)
         st.session_state.pop("assistant_plant_id", None)
         st.session_state.pop("assistant_conversation_id", None)
@@ -62,10 +578,15 @@ def main() -> None:
         st.session_state.pop("assistant_mic_transcript", None)
         st.session_state.pop("assistant_mic_submitted_signature", None)
 
+    if st.session_state.get("open_history_conversation"):
+        _render_open_conversation()
+        return
+
     if st.button("Identify with local Gemma", type="primary"):
         st.session_state.pop("confirmed_plant_id", None)
         st.session_state.pop("confirmed_plant_name", None)
         st.session_state.pop("confirmed_plant", None)
+        st.session_state.pop("plant_confirmed", None)
         st.session_state.pop("assistant_messages", None)
         st.session_state.pop("assistant_plant_id", None)
         st.session_state.pop("assistant_conversation_id", None)
@@ -105,18 +626,187 @@ def main() -> None:
     if not result.plant_id:
         st.info("Care information is unavailable until you select a supported plant.")
 
-    confirm_col, manual_col = st.columns(2)
-    with confirm_col:
-        if st.button("Yes, this is my plant", key="confirm_identification"):
-            st.session_state.confirmed_plant_id = result.plant_id
-            st.session_state.confirmed_plant_name = result.common_name
-    with manual_col:
-        if st.button("No, choose manually", key="choose_manual_plant"):
-            st.session_state.manual_selection_requested = True
+    plant_confirmed = bool(
+        st.session_state.get("plant_confirmed")
+        or st.session_state.get("confirmed_plant_id")
+    )
+    if plant_confirmed:
+        st.session_state.plant_confirmed = True
+    if not plant_confirmed and not st.session_state.get("manual_selection_requested"):
+        confirm_col, manual_col = st.columns(2)
+        with confirm_col:
+            if st.button("Yes, this is my plant", key="confirm_identification"):
+                st.session_state.confirmed_plant_id = result.plant_id
+                st.session_state.confirmed_plant_name = result.common_name
+                st.session_state.plant_confirmed = True
+                st.rerun()
+        with manual_col:
+            if st.button("No, choose manually", key="choose_manual_plant"):
+                st.session_state.manual_selection_requested = True
     if st.session_state.get("manual_selection_requested"):
         _render_manual_selection()
     else:
         _render_confirmed_profile()
+
+
+def _reset_assistant_view() -> None:
+    for key in (
+        "assistant_messages",
+        "assistant_plant_id",
+        "assistant_conversation_id",
+        "assistant_audio_cache",
+        "assistant_voice_targets",
+        "assistant_voice_attempted",
+        "assistant_voice_autoplayed",
+        "assistant_mic_signature",
+        "assistant_mic_recording_bytes",
+        "assistant_mic_transcription_attempted",
+        "assistant_mic_transcript",
+        "assistant_mic_submitted_signature",
+    ):
+        st.session_state.pop(key, None)
+
+
+def _reset_current_plant_state(previous_plant_id: str | None = None) -> None:
+    """Clear the active plant/UI state without touching persistent history."""
+
+    for key in (
+        "identification",
+        "identification_image_signature",
+        "manual_selection_requested",
+        "manual_plant_selection",
+        "confirmed_plant_id",
+        "confirmed_plant_name",
+        "confirmed_plant",
+        "plant_confirmed",
+        "open_history_conversation",
+    ):
+        st.session_state.pop(key, None)
+
+    if isinstance(previous_plant_id, str) and previous_plant_id:
+        for prefix in ("soil_volume_", "assistant_mode_", "hands_free_"):
+            st.session_state.pop(f"{prefix}{previous_plant_id}", None)
+    _reset_assistant_view()
+
+
+def _render_recent_chats() -> None:
+    try:
+        conversations = list_recent_conversations()
+    except sqlite3.Error:
+        conversations = []
+
+    with st.sidebar:
+        st.subheader("Recent Chats")
+        if st.button(
+            "+ New Chat",
+            key="new_chat_button",
+            use_container_width=True,
+            type="primary",
+        ):
+            previous_plant_id = st.session_state.get("confirmed_plant_id")
+            try:
+                new_conversation_id = create_conversation(
+                    None,
+                    None,
+                )
+            except sqlite3.Error:
+                st.error("Could not create a new chat right now.")
+            else:
+                st.session_state.current_conversation_id = new_conversation_id
+                previous_upload_key = st.session_state.get("plant_upload_widget_key")
+                if isinstance(previous_upload_key, str):
+                    st.session_state.pop(previous_upload_key, None)
+                st.session_state.plant_upload_widget_key = (
+                    f"plant_upload_{new_conversation_id}"
+                )
+                _reset_current_plant_state(
+                    previous_plant_id
+                    if isinstance(previous_plant_id, str)
+                    else None
+                )
+                st.session_state.open_history_conversation = False
+                st.rerun()
+
+        if not conversations:
+            st.caption("No recent chats yet.")
+            _render_my_pots()
+            return
+        for conversation in conversations[:20]:
+            conversation_id = str(conversation["id"])
+            plant_name = conversation.get("plant_name") or "PlantWise Chat"
+            title = conversation.get("title") or f"🌱 {plant_name}"
+            row_context = (
+                st.container(key=f"plantwise-chat-{conversation_id}")
+                if plant_name == "PlantWise Chat" and not conversation.get("plant_id")
+                else nullcontext()
+            )
+            with row_context:
+                chat_col, delete_col = st.columns([0.78, 0.22], gap="small")
+                with chat_col:
+                    if st.button(
+                        f"🌱 {plant_name}",
+                        key=f"recent_chat_{conversation_id}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.current_conversation_id = conversation_id
+                        st.session_state.open_history_conversation = True
+                        if conversation.get("plant_id"):
+                            st.session_state.confirmed_plant_id = conversation["plant_id"]
+                            st.session_state.confirmed_plant_name = plant_name
+                            st.session_state.plant_confirmed = True
+                        _reset_assistant_view()
+                        st.rerun()
+                with delete_col:
+                    if st.button(
+                        "🗑️",
+                        key=f"delete_recent_chat_{conversation_id}",
+                        help="Delete this chat",
+                        use_container_width=True,
+                    ):
+                        try:
+                            delete_conversation(conversation_id)
+                        except sqlite3.Error:
+                            st.error("Could not delete this chat right now.")
+                        else:
+                            if st.session_state.get("current_conversation_id") == conversation_id:
+                                st.session_state.pop("current_conversation_id", None)
+                                st.session_state.open_history_conversation = False
+                                st.session_state.pop("identification", None)
+                                st.session_state.pop("identification_image_signature", None)
+                                st.session_state.pop("manual_selection_requested", None)
+                                st.session_state.pop("confirmed_plant_id", None)
+                                st.session_state.pop("confirmed_plant_name", None)
+                                st.session_state.pop("confirmed_plant", None)
+                                st.session_state.pop("plant_confirmed", None)
+                                _reset_assistant_view()
+                            st.rerun()
+
+        _render_my_pots()
+
+
+def _render_open_conversation() -> None:
+    conversation_id = st.session_state.get("current_conversation_id")
+    if not isinstance(conversation_id, str):
+        st.info("Choose a recent chat or upload a plant image to begin.")
+        return
+    try:
+        conversation = get_conversation(conversation_id)
+    except sqlite3.Error:
+        st.error("Chat history is unavailable right now.")
+        return
+    if not conversation or not conversation.get("plant_id"):
+        st.info("This chat will be ready after a plant is confirmed.")
+        return
+    plant_id = str(conversation["plant_id"])
+    plant = get_plant_by_id(plant_id)
+    if plant is None:
+        st.info("The plant data for this chat is no longer available.")
+        return
+    st.session_state.confirmed_plant_id = plant_id
+    st.session_state.confirmed_plant_name = str(plant.get("name") or plant_id)
+    st.session_state.confirmed_plant = plant
+    st.session_state.plant_confirmed = True
+    _render_confirmed_profile()
 
 
 def _render_manual_selection() -> None:
@@ -132,6 +822,7 @@ def _render_manual_selection() -> None:
         st.session_state.confirmed_plant_name = str(
             selected_plant.get("name") or selected_plant.get("id") or "selected plant"
         )
+        st.session_state.plant_confirmed = True
     _render_confirmed_profile()
 
 
@@ -173,7 +864,6 @@ def _render_confirmed_profile() -> None:
     pot_volume = st.session_state.get(f"soil_volume_{plant.get('id', 'confirmed_plant')}")
     _render_save_to_my_pots(plant, pot_volume)
     _render_assistant(plant_id, plant)
-    _render_my_pots()
 
 
 def _render_save_to_my_pots(plant: dict[str, object], pot_volume: object) -> None:
@@ -181,6 +871,9 @@ def _render_save_to_my_pots(plant: dict[str, object], pot_volume: object) -> Non
     plant_name = plant.get("name")
     if not isinstance(plant_id, str) or not isinstance(plant_name, str):
         return
+    saved_notice = st.session_state.pop("my_pots_saved_notice", None)
+    if isinstance(saved_notice, str):
+        st.success(saved_notice)
     if st.button("Save to My Pots", key=f"save_pot_{plant_id}"):
         try:
             was_saved = save_pot(
@@ -195,7 +888,8 @@ def _render_save_to_my_pots(plant: dict[str, object], pot_volume: object) -> Non
             st.error("Could not save this plant right now. Please try again.")
         else:
             if was_saved:
-                st.success(f"{plant_name} was saved to My Pots.")
+                st.session_state.my_pots_saved_notice = f"{plant_name} was saved to My Pots."
+                st.rerun()
             else:
                 st.info(f"{plant_name} is already saved in My Pots.")
 
@@ -211,23 +905,29 @@ def _render_my_pots() -> None:
         st.info("You have no saved pots yet.")
         return
     for saved_pot in saved_pots:
-        details_col, delete_col = st.columns([5, 1])
-        with details_col:
-            st.markdown(f"**🌱 {saved_pot['plant_name']}**")
-            scientific_name = saved_pot.get("scientific_name")
-            if scientific_name:
-                st.caption(f"Scientific name: {scientific_name}")
-            pot_volume = saved_pot.get("pot_volume_litres")
-            if pot_volume is not None:
-                st.caption(f"Pot capacity: {float(pot_volume):g} L")
-        with delete_col:
-            if st.button("Delete", key=f"delete_pot_{saved_pot['plant_id']}"):
-                try:
-                    delete_pot(saved_pot["plant_id"])
-                except sqlite3.Error:
-                    st.error("Could not delete this pot right now.")
-                else:
-                    st.rerun()
+        with st.container(key=f"my-pot-{saved_pot['plant_id']}"):
+            details_col, delete_col = st.columns([5, 1])
+            with details_col:
+                st.markdown(f"**🌱 {saved_pot['plant_name']}**")
+                scientific_name = saved_pot.get("scientific_name")
+                if scientific_name:
+                    st.caption(f"Scientific name: {scientific_name}")
+                pot_volume = saved_pot.get("pot_volume_litres")
+                if pot_volume is not None:
+                    st.caption(f"Pot capacity: {float(pot_volume):g} L")
+            with delete_col:
+                with st.container(key=f"my-pot-delete-{saved_pot['plant_id']}"):
+                    if st.button(
+                        "🗑️",
+                        key=f"delete_pot_{saved_pot['plant_id']}",
+                        help="Delete this saved pot",
+                    ):
+                        try:
+                            delete_pot(saved_pot["plant_id"])
+                        except sqlite3.Error:
+                            st.error("Could not delete this pot right now.")
+                        else:
+                            st.rerun()
 
 
 def _render_soil_mix(plant: dict[str, object]) -> None:
@@ -280,29 +980,45 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
             "plant_problems": problems,
         }
 
+    conversation_id = st.session_state.get("current_conversation_id")
     try:
-        conversation_id = get_or_create_conversation(plant_id)
+        if not isinstance(conversation_id, str):
+            conversation_id = create_conversation(
+                plant_id,
+                str(plant.get("name") or plant_id),
+            )
+            st.session_state.current_conversation_id = conversation_id
+        else:
+            update_conversation(
+                conversation_id,
+                plant_id=plant_id,
+                plant_name=str(plant.get("name") or plant_id),
+            )
     except sqlite3.Error:
         st.error("Conversation history is unavailable right now.")
         return
 
-    if (
+    conversation_changed = (
         st.session_state.get("assistant_plant_id") != plant_id
         or st.session_state.get("assistant_conversation_id") != conversation_id
-    ):
-        try:
-            stored_messages = load_conversation_messages(conversation_id)
-        except sqlite3.Error:
-            st.error("Conversation history is unavailable right now.")
-            return
+    )
+    try:
+        stored_messages = get_conversation_messages(conversation_id)
+    except sqlite3.Error:
+        st.error("Conversation history is unavailable right now.")
+        return
+
+    # SQLite is the source of truth for messages; transient session state must
+    # never allow a previous conversation's messages to remain visible.
+    st.session_state.assistant_messages = [
+        {"role": item["role"], "content": item["content"]}
+        for item in stored_messages
+        if item.get("role") in {"user", "assistant"}
+        and isinstance(item.get("content"), str)
+    ]
+    if conversation_changed:
         st.session_state.assistant_plant_id = plant_id
         st.session_state.assistant_conversation_id = conversation_id
-        st.session_state.assistant_messages = [
-            {"role": item["role"], "content": item["message_text"]}
-            for item in stored_messages
-            if item.get("role") in {"user", "assistant"}
-            and isinstance(item.get("message_text"), str)
-        ]
         st.session_state.assistant_audio_cache = {}
         st.session_state.assistant_voice_targets = set()
         st.session_state.assistant_voice_attempted = set()
@@ -351,7 +1067,7 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
                     and response_id in audio_cache
                     and response_id not in voice_autoplayed
                 ):
-                    st.audio(audio_cache[response_id], format="audio/mp3", autoplay=True)
+                    _autoplay_audio(audio_cache[response_id])
                     voice_autoplayed.add(response_id)
 
                 if st.button("🔊 Listen to response", key=f"listen_{response_id[:12]}"):
@@ -400,7 +1116,7 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
     user_message = user_message.strip()
     messages.append({"role": "user", "content": user_message})
     try:
-        save_conversation_message(conversation_id, "user", user_message, "text")
+        save_message(conversation_id, "user", user_message, input_method="text")
     except sqlite3.Error:
         st.error("Conversation history could not be saved, so this message may not survive a refresh.")
     try:
@@ -418,7 +1134,7 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
 
     messages.append({"role": "assistant", "content": assistant_response})
     try:
-        save_conversation_message(conversation_id, "assistant", assistant_response, "text")
+        save_message(conversation_id, "assistant", assistant_response, input_method="text")
     except sqlite3.Error:
         st.warning("The response is visible, but conversation history could not be saved.")
     if hands_free:
@@ -436,27 +1152,32 @@ def _render_mic_assistant(
     hands_free: bool,
     voice_targets: set[str],
 ) -> None:
-    recording = st.audio_input(
-        "Press the microphone button to record a message",
-        key=f"mic_input_{plant_id}",
-        sample_rate=16000,
-    )
-    if recording is not None:
-        audio_bytes = recording.getvalue()
-        signature = hashlib.sha256(audio_bytes).hexdigest()
-        if st.session_state.get("assistant_mic_signature") != signature:
-            st.session_state.assistant_mic_signature = signature
-            st.session_state.assistant_mic_recording_bytes = audio_bytes
-            st.session_state.assistant_mic_transcription_attempted = False
-            st.session_state.assistant_mic_transcript = None
-            st.session_state.assistant_mic_submitted_signature = None
+    recording_event = record_microphone(key=f"mic_recorder_{plant_id}")
+    if isinstance(recording_event, dict) and recording_event.get("status") == "complete":
+        try:
+            audio_bytes = base64.b64decode(
+                recording_event.get("audio_base64", ""),
+                validate=True,
+            )
+        except (ValueError, TypeError):
+            audio_bytes = b""
+        if audio_bytes:
+            signature = hashlib.sha256(audio_bytes).hexdigest()
+            if st.session_state.get("assistant_mic_signature") != signature:
+                st.session_state.assistant_mic_signature = signature
+                st.session_state.assistant_mic_recording_bytes = audio_bytes
+                st.session_state.assistant_mic_transcription_attempted = False
+                st.session_state.assistant_mic_transcript = None
+                st.session_state.assistant_mic_submitted_signature = None
+        else:
+            st.warning("The microphone returned an empty recording. Please try again.")
 
     signature = st.session_state.get("assistant_mic_signature")
     audio_bytes = st.session_state.get("assistant_mic_recording_bytes")
     if not isinstance(signature, str) or not isinstance(audio_bytes, bytes) or not audio_bytes:
         return
 
-    st.audio(audio_bytes, format="audio/wav")
+    st.audio(audio_bytes, format="audio/webm")
     transcription_attempted = bool(
         st.session_state.get("assistant_mic_transcription_attempted")
     )
@@ -490,7 +1211,7 @@ def _render_mic_assistant(
     messages.append({"role": "user", "content": user_message})
     st.session_state.assistant_mic_submitted_signature = signature
     try:
-        save_conversation_message(conversation_id, "user", user_message, "voice")
+        save_message(conversation_id, "user", user_message, input_method="voice")
     except sqlite3.Error:
         st.error("Conversation history could not be saved, so this message may not survive a refresh.")
     try:
@@ -508,7 +1229,7 @@ def _render_mic_assistant(
 
     messages.append({"role": "assistant", "content": assistant_response})
     try:
-        save_conversation_message(conversation_id, "assistant", assistant_response, "voice")
+        save_message(conversation_id, "assistant", assistant_response, input_method="voice")
     except sqlite3.Error:
         st.warning("The response is visible, but conversation history could not be saved.")
     if hands_free:
@@ -519,6 +1240,40 @@ def _render_mic_assistant(
 
 def _assistant_response_id(message_index: int, content: str) -> str:
     return hashlib.sha256(f"{message_index}:{content}".encode("utf-8")).hexdigest()
+
+
+def _autoplay_audio(audio_bytes: bytes) -> None:
+    """Attempt one compact browser autoplay using already-generated MP3 bytes."""
+
+    encoded_audio = base64.b64encode(audio_bytes).decode("ascii")
+    components.html(
+        f"""
+        <div id="autoplay-status" style="font: 0.85rem sans-serif; color: #6b7280; min-height: 20px;"></div>
+        <script>
+        (() => {{
+          const status = document.getElementById("autoplay-status");
+          const binary = atob("{encoded_audio}");
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+          const url = URL.createObjectURL(new Blob([bytes], {{ type: "audio/mpeg" }}));
+          const audio = new Audio(url);
+          const cleanup = () => {{
+            audio.pause();
+            audio.removeAttribute("src");
+            URL.revokeObjectURL(url);
+          }};
+          audio.addEventListener("ended", cleanup, {{ once: true }});
+          audio.addEventListener("error", cleanup, {{ once: true }});
+          audio.play().catch(() => {{
+            status.textContent = "🔊 Autoplay was blocked. Click Listen to response.";
+            cleanup();
+          }});
+        }})();
+        </script>
+        """,
+        height=28,
+        scrolling=False,
+    )
 
 
 if __name__ == "__main__":

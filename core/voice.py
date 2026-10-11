@@ -116,8 +116,10 @@ def speech_to_text(audio_bytes: bytes) -> str | None:
         from elevenlabs.client import ElevenLabs
 
         client = ElevenLabs(api_key=api_key)
+        audio_file = BytesIO(audio_bytes)
+        audio_file.name = "potwise-recording.webm"
         transcription = client.speech_to_text.convert(
-            file=BytesIO(audio_bytes),
+            file=audio_file,
             model_id="scribe_v2",
         )
         text = getattr(transcription, "text", None)
