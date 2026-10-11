@@ -9,20 +9,20 @@
       "Barbados Aloe",
       "Medicine Plant"
     ],
-    "light": "Bright light with several hours of sun; acclimate gradually before placing it in stronger direct sun.",
+    "light": "Bright light with several hours of sun. Adjust gradually before placing it in stronger direct sun.",
     "soil_mix_parts": {
       "potting_mix": 1,
       "perlite": 1,
       "pumice_or_coarse_grit": 1
     },
-    "pot_note": "Use a pot with multiple drainage holes; an unglazed clay pot can help the mix dry. Do not let the pot stand in drained water.",
+    "pot_note": "Use a pot with multiple drainage holes. An unglazed clay pot can help the mix dry. Do not let the pot stand in drained water.",
     "watering": {
       "rule": "Let the potting mix dry out completely, then water thoroughly and let excess water drain away. Reduce watering during cool, low-growth periods.",
       "by_season": {
         "summer": "Check the mix periodically because heat can speed drying, but water only after it has dried completely.",
-        "monsoon": "Shelter the pot from prolonged rain; check that the mix is completely dry before watering.",
+        "monsoon": "Shelter the pot from prolonged rain, check that the mix is completely dry before watering.",
         "autumn": "Allow the mix to dry completely between waterings and reassess after each watering.",
-        "winter": "Water sparingly and only when the mix is fully dry; cool conditions usually mean slower drying."
+        "winter": "Water sparingly and only when the mix is fully dry, cool conditions usually mean slower drying."
       },
       "avoid": "Do not keep the mix continuously wet or leave water in the saucer; persistent moisture can cause root problems."
     },

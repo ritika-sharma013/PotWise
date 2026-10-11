@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# PotWise runtime database
+database/*.sqlite3
+data/potwise.db
