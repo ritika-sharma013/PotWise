@@ -6,6 +6,8 @@ import hashlib
 import base64
 import sqlite3
 from contextlib import nullcontext
+from pathlib import Path
+from uuid import uuid4
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -14,10 +16,10 @@ from core.identify import (
     IdentificationError,
     OllamaModelError,
     OllamaUnavailableError,
-    identify_plant,
 )
+from core.ai_provider import GeminiProviderError, chat_with_provider, identify_plant_with_provider
 from core.plant_data import get_plant_by_id, get_supported_plants
-from core.assistant import AssistantResponseError, chat_with_gemma
+from core.assistant import AssistantResponseError
 from core.problem_data import ProblemDataError, get_problems_for_plant, load_problem_data
 from core.soil import calculate_soil_mix
 from core.voice import get_last_voice_error, speech_to_text, text_to_speech
@@ -41,6 +43,8 @@ from core.pots import (
 
 def main() -> None:
     st.set_page_config(page_title="PotWise", page_icon="🌿", layout="centered")
+    st.session_state.setdefault("anonymous_session_id", uuid4().hex)
+    _session_database_path()
     st.markdown(
         """
         <style>
@@ -341,6 +345,18 @@ def main() -> None:
             color: var(--pw-text);
         }
 
+        /* Streamlit renders assistant Markdown headings/lists as separate elements. */
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h1,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h2,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h3,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] h4,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] strong {
+            color: var(--pw-text) !important;
+            opacity: 1 !important;
+        }
+
         [data-testid="stSpinner"] p {
             color: var(--pw-primary);
             font-weight: 600;
@@ -424,8 +440,15 @@ def main() -> None:
             border-color: var(--pw-green);
         }
 
-        [data-testid="stChatMessage"][data-message-author-role="user"] p {
-            color: var(--pw-cream);
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] h1,
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] h2,
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] h3,
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] h4,
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] p,
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] li,
+        [data-testid="stChatMessage"][data-message-author-role="user"] [data-testid="stMarkdownContainer"] strong {
+            color: var(--pw-cream) !important;
+            opacity: 1 !important;
         }
 
         [data-testid="stChatMessage"][data-message-author-role="assistant"] {
@@ -501,6 +524,7 @@ def main() -> None:
             font-size: 1.05rem !important;
             line-height: 1;
         }
+
         </style>
         """,
         unsafe_allow_html=True,
@@ -545,7 +569,10 @@ def main() -> None:
             and st.session_state.get("identification_image_signature") is None
         ):
             try:
-                current_conversation = get_conversation(current_id)
+                current_conversation = get_conversation(
+                    current_id,
+                    database_path=_session_database_path(),
+                )
             except sqlite3.Error:
                 st.error("Could not load the current chat right now.")
                 return
@@ -557,7 +584,9 @@ def main() -> None:
         )
         if not is_blank_current_conversation:
             try:
-                st.session_state.current_conversation_id = create_conversation()
+                st.session_state.current_conversation_id = create_conversation(
+                    database_path=_session_database_path()
+                )
             except sqlite3.Error:
                 st.error("Could not create a new chat right now.")
                 return
@@ -597,7 +626,9 @@ def main() -> None:
         st.session_state.pop("assistant_mic_submitted_signature", None)
         with st.spinner("Checking the image with local Ollama…"):
             try:
-                st.session_state.identification = identify_plant(image_bytes)
+                st.session_state.identification = identify_plant_with_provider(image_bytes)
+            except GeminiProviderError as exc:
+                st.error(str(exc))
             except OllamaUnavailableError as exc:
                 st.error(str(exc))
             except OllamaModelError as exc:
@@ -649,6 +680,15 @@ def main() -> None:
         _render_confirmed_profile()
 
 
+def _session_database_path() -> Path:
+    """Return the SQLite file isolated to this Streamlit browser session."""
+
+    session_id = st.session_state.setdefault("anonymous_session_id", uuid4().hex)
+    sessions_directory = Path(__file__).resolve().parent / "database" / "sessions"
+    sessions_directory.mkdir(parents=True, exist_ok=True)
+    return sessions_directory / f"potwise_{session_id}.sqlite3"
+
+
 def _reset_assistant_view() -> None:
     for key in (
         "assistant_messages",
@@ -691,7 +731,9 @@ def _reset_current_plant_state(previous_plant_id: str | None = None) -> None:
 
 def _render_recent_chats() -> None:
     try:
-        conversations = list_recent_conversations()
+        conversations = list_recent_conversations(
+            database_path=_session_database_path()
+        )
     except sqlite3.Error:
         conversations = []
 
@@ -708,6 +750,7 @@ def _render_recent_chats() -> None:
                 new_conversation_id = create_conversation(
                     None,
                     None,
+                    database_path=_session_database_path(),
                 )
             except sqlite3.Error:
                 st.error("Could not create a new chat right now.")
@@ -764,7 +807,10 @@ def _render_recent_chats() -> None:
                         use_container_width=True,
                     ):
                         try:
-                            delete_conversation(conversation_id)
+                            delete_conversation(
+                                conversation_id,
+                                database_path=_session_database_path(),
+                            )
                         except sqlite3.Error:
                             st.error("Could not delete this chat right now.")
                         else:
@@ -790,7 +836,10 @@ def _render_open_conversation() -> None:
         st.info("Choose a recent chat or upload a plant image to begin.")
         return
     try:
-        conversation = get_conversation(conversation_id)
+        conversation = get_conversation(
+            conversation_id,
+            database_path=_session_database_path(),
+        )
     except sqlite3.Error:
         st.error("Chat history is unavailable right now.")
         return
@@ -883,6 +932,7 @@ def _render_save_to_my_pots(plant: dict[str, object], pot_volume: object) -> Non
                 if isinstance(plant.get("scientific_name"), str)
                 else None,
                 float(pot_volume) if isinstance(pot_volume, (int, float)) else None,
+                database_path=_session_database_path(),
             )
         except sqlite3.Error:
             st.error("Could not save this plant right now. Please try again.")
@@ -897,7 +947,9 @@ def _render_save_to_my_pots(plant: dict[str, object], pot_volume: object) -> Non
 def _render_my_pots() -> None:
     st.header("My Pots")
     try:
-        saved_pots = list_saved_pots()
+        saved_pots = list_saved_pots(
+            database_path=_session_database_path()
+        )
     except sqlite3.Error:
         st.info("Saved pots are unavailable right now.")
         return
@@ -923,7 +975,10 @@ def _render_my_pots() -> None:
                         help="Delete this saved pot",
                     ):
                         try:
-                            delete_pot(saved_pot["plant_id"])
+                            delete_pot(
+                                saved_pot["plant_id"],
+                                database_path=_session_database_path(),
+                            )
                         except sqlite3.Error:
                             st.error("Could not delete this pot right now.")
                         else:
@@ -986,6 +1041,7 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
             conversation_id = create_conversation(
                 plant_id,
                 str(plant.get("name") or plant_id),
+                database_path=_session_database_path(),
             )
             st.session_state.current_conversation_id = conversation_id
         else:
@@ -993,6 +1049,7 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
                 conversation_id,
                 plant_id=plant_id,
                 plant_name=str(plant.get("name") or plant_id),
+                database_path=_session_database_path(),
             )
     except sqlite3.Error:
         st.error("Conversation history is unavailable right now.")
@@ -1003,7 +1060,10 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
         or st.session_state.get("assistant_conversation_id") != conversation_id
     )
     try:
-        stored_messages = get_conversation_messages(conversation_id)
+        stored_messages = get_conversation_messages(
+            conversation_id,
+            database_path=_session_database_path(),
+        )
     except sqlite3.Error:
         st.error("Conversation history is unavailable right now.")
         return
@@ -1116,12 +1176,21 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
     user_message = user_message.strip()
     messages.append({"role": "user", "content": user_message})
     try:
-        save_message(conversation_id, "user", user_message, input_method="text")
+        save_message(
+            conversation_id,
+            "user",
+            user_message,
+            input_method="text",
+            database_path=_session_database_path(),
+        )
     except sqlite3.Error:
         st.error("Conversation history could not be saved, so this message may not survive a refresh.")
     try:
         with st.spinner("🌱 PotWise is thinking..."):
-            assistant_response = chat_with_gemma(messages, plant, diagnostic_context)
+            assistant_response = chat_with_provider(messages, plant, diagnostic_context)
+    except GeminiProviderError as exc:
+        st.error(str(exc))
+        return
     except OllamaUnavailableError:
         st.error("Ollama is unavailable. Start Ollama and try again.")
         return
@@ -1134,7 +1203,13 @@ def _render_assistant(plant_id: str, plant: dict[str, object]) -> None:
 
     messages.append({"role": "assistant", "content": assistant_response})
     try:
-        save_message(conversation_id, "assistant", assistant_response, input_method="text")
+        save_message(
+            conversation_id,
+            "assistant",
+            assistant_response,
+            input_method="text",
+            database_path=_session_database_path(),
+        )
     except sqlite3.Error:
         st.warning("The response is visible, but conversation history could not be saved.")
     if hands_free:
@@ -1211,12 +1286,21 @@ def _render_mic_assistant(
     messages.append({"role": "user", "content": user_message})
     st.session_state.assistant_mic_submitted_signature = signature
     try:
-        save_message(conversation_id, "user", user_message, input_method="voice")
+        save_message(
+            conversation_id,
+            "user",
+            user_message,
+            input_method="voice",
+            database_path=_session_database_path(),
+        )
     except sqlite3.Error:
         st.error("Conversation history could not be saved, so this message may not survive a refresh.")
     try:
         with st.spinner("🌱 PotWise is thinking..."):
-            assistant_response = chat_with_gemma(messages, plant, diagnostic_context)
+            assistant_response = chat_with_provider(messages, plant, diagnostic_context)
+    except GeminiProviderError as exc:
+        st.error(str(exc))
+        return
     except OllamaUnavailableError:
         st.error("Ollama is unavailable. Start Ollama and try again.")
         return
@@ -1229,7 +1313,13 @@ def _render_mic_assistant(
 
     messages.append({"role": "assistant", "content": assistant_response})
     try:
-        save_message(conversation_id, "assistant", assistant_response, input_method="voice")
+        save_message(
+            conversation_id,
+            "assistant",
+            assistant_response,
+            input_method="voice",
+            database_path=_session_database_path(),
+        )
     except sqlite3.Error:
         st.warning("The response is visible, but conversation history could not be saved.")
     if hands_free:

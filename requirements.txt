@@ -1,3 +1,4 @@
 streamlit>=1.57,<2
 requests>=2.31,<3
 elevenlabs>=1.0
+google-genai>=1.0,<2
